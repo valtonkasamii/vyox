@@ -14,14 +14,16 @@ const Posts = () => {
     const since_id = useSelector((state) => state.posts.sinceId);
     const posts = allPosts.slice(0, num)
     const [wait, setWait] = useState(false) 
-    
+    const [loading2, setLoading2] = useState(false)
+
     console.log(posts)
     console.log(allPosts)
     console.log(allPosts.length ,num)
 
     const get10posts = async (currentNum) => {
-      if ((refresh >= allPosts.length) || allPosts.length < 80 || allPosts.length - 60 <= currentNum) {
+      if ((refresh >= allPosts.length) || allPosts.length < 80 || allPosts.length - 60 <= currentNum || allPosts.length - 60 <= refresh) {
         try {  
+            setLoading2(true)
             setWait(true)
         const response = await fetch('http://127.0.0.1:5000/posts', {
                 credentials: 'include',
@@ -46,6 +48,7 @@ const Posts = () => {
               } finally {
                 setWait(false)
                 setLoading(false)
+                setLoading2(false)
               }
         } else {
             setLoading(false)
@@ -55,10 +58,10 @@ const Posts = () => {
     
     useEffect(() => {
         const outside = num + 20
-            dispatch(deletePost());
-            setNum(outside)
-            dispatch(addRefresh(outside));
-            get10posts(outside)
+           dispatch(deletePost());
+           setNum(outside)
+           dispatch(addRefresh(outside));
+           get10posts(outside)
         }, [])
 
     useEffect(() => {
@@ -88,7 +91,7 @@ const Posts = () => {
             }
         };
         if (posts.length >= 1) {
-        window.addEventListener("scroll", handleScroll);
+            window.addEventListener("scroll", handleScroll);
     
         return () => {
           window.removeEventListener("scroll", handleScroll);
@@ -176,6 +179,11 @@ const Posts = () => {
                 </div>}
             </div>
         ))}
+        {loading2 && <div className='flex justify-center'> 
+            <div className='flex justify-center text-4xl px-4 pt-[6px] py-2 border-2 w-fit rounded-[15px] mt-[-5px] mb-3'>
+            Loading
+            </div>
+            </div>}
     </div>
   )
 }
