@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import { useDispatch } from 'react-redux';
-import { addPosts, addRefresh, deletePost } from '../reducers/postsReducer.js';
+import { addPosts, addRefresh, deletePost, addId } from '../reducers/postsReducer.js';
 import { useSelector } from 'react-redux';
 
 const Posts = () => {
@@ -10,13 +10,17 @@ const Posts = () => {
     const dispatch = useDispatch();
     const allPosts = useSelector((state) => state.posts.posts);
     const refresh = useSelector((state) => state.posts.refresh);
+    const max_id = useSelector((state) => state.posts.maxId);
+    const since_id = useSelector((state) => state.posts.sinceId);
     const posts = allPosts.slice(0, num)
     const [wait, setWait] = useState(false) 
+    
     console.log(posts)
     console.log(allPosts)
     console.log(allPosts.length ,num)
+
     const get10posts = async (currentNum) => {
-      if ((refresh >= allPosts.length) || allPosts.length < 60 || allPosts.length - 60 <= currentNum) {
+      if ((refresh >= allPosts.length) || allPosts.length < 80 || allPosts.length - 60 <= currentNum) {
         try {  
             setWait(true)
         const response = await fetch('http://127.0.0.1:5000/posts', {
@@ -25,15 +29,17 @@ const Posts = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({})            
+                body: JSON.stringify({max_id, since_id})            
             })
         if (!response.ok) {
 
         } else {
             const data = await response.json()
-            console.log(data)
-            
+            const max = data[data.length - 1].id
+            const since = allPosts[0].id
+            console.log(max, since)
             dispatch(addPosts(data))
+            dispatch(addId({max, since}))
             } 
             } catch (error) {
                 console.error(error.message)
@@ -69,11 +75,14 @@ const Posts = () => {
     
           if (scrollPosition >= threshold) {
             const outside = num + 20
-            if (allPosts.length > num) {
+            if (allPosts.length >= num || (num - 20) < allPosts.length) {
                 setNum(outside)
             }
             dispatch(addRefresh(outside))
             if (!wait) {
+                if ((num - 20) < allPosts.length) {
+                    setNum(outside)
+                }
                 get10posts(outside)
             }
             }
