@@ -21,7 +21,7 @@ const Posts = () => {
     console.log(allPosts.length ,num)
 
     const get10posts = async (currentNum) => {
-      if ((refresh >= allPosts.length) || allPosts.length <= 60 || allPosts.length - 60 <= currentNum || allPosts.length - 60 <= refresh) {
+      if (refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) {
         try {  
             setLoading2(true)
             setWait(true)
