@@ -2,6 +2,9 @@ import React, {useEffect, useState} from 'react'
 import { useDispatch } from 'react-redux';
 import { addPosts, addRefresh, deletePost, addId } from '../reducers/postsReducer.js';
 import { useSelector } from 'react-redux';
+import { faHeart as solidHeart, faReply, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import { faHeart } from '@fortawesome/free-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Posts = () => {
     const [select, setSelect] = useState('Media')
@@ -15,6 +18,7 @@ const Posts = () => {
     const posts = allPosts.slice(0, num)
     const [wait, setWait] = useState(false) 
     const [loading2, setLoading2] = useState(false)
+    const [localLike, setLocalLike] = useState([])
 
     console.log(posts)
     console.log(allPosts)
@@ -37,8 +41,9 @@ const Posts = () => {
 
         } else {
             const data = await response.json()
+            console.log(data)
             const max = data[data.length - 1].id
-            const since = allPosts[0].id
+            const since = allPosts.length > 0 ? allPosts[0].id : null
             console.log(max, since)
             dispatch(addPosts(data))
             dispatch(addId({max, since}))
@@ -56,12 +61,47 @@ const Posts = () => {
         
     } 
     
+    const toggleLike = async (postId, isLiked) => {
+        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
+        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
+    
+        try {
+            let response
+            if (!isLiked){
+             response = await fetch(`${mastodonServer}/api/v1/statuses/${postId}/favourite`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } else {
+             response = await fetch(`${mastodonServer}/api/v1/statuses/${postId}/unfavourite`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+
+            if (!response.ok) {
+                throw new Error('Failed to like the post');
+            }
+    
+            const data = await response.json();
+            console.log('Post liked/unliked:', data);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+    
     useEffect(() => {
         const outside = num + 20
-           dispatch(deletePost());
-           setNum(outside)
-           dispatch(addRefresh(outside));
-           get10posts(outside)
+         dispatch(deletePost());
+         setNum(outside)
+         dispatch(addRefresh(outside));
+         get10posts(outside)
         }, [])
 
     useEffect(() => {
@@ -91,7 +131,7 @@ const Posts = () => {
             }
         };
         if (posts.length >= 1) {
-            window.addEventListener("scroll", handleScroll);
+          window.addEventListener("scroll", handleScroll);
     
         return () => {
           window.removeEventListener("scroll", handleScroll);
@@ -114,13 +154,45 @@ const Posts = () => {
     const css2 = (array) => {
         if (array.length === 1) {
             return ''
-        } else return 'space-x-3'
+        } else return 'space-x-3 pb-2'
     } 
 
     const css3 = (array) => {
         if (array.length === 1) {
-            return 'w-[360px] max-sm:w-[310px]'
-        } else return 'w-[300px] max-sm:w-[260px]'
+            return 'max-sm:w-[95vw]'
+        } else return 'w-[300px] max-sm:w-[75vw]'
+    }
+
+    const css4 = (array) => {
+        if (array.length === 1) {
+            return ' '
+        } else return 'flex-shrink-0'
+    }
+
+    const css5 = (array) => {
+        if (array.length === 1) {
+            return 'w-[370px] max-sm:w-[89vw]'
+        } else return 'w-[270px] max-sm:w-[69vw]'
+    }
+
+    const likePost = (id) => {
+        setLocalLike([...localLike, id])
+        toggleLike(id, false)
+    }
+    
+    const unlikePost = (id) => {
+        setLocalLike(localLike.filter(oneId => oneId !== id));
+        toggleLike(id, true)
+    }
+    
+    const likedPost = (id) => {
+        return localLike.includes(id)
+    }
+
+    const likedPosts = (id, likes) => {
+        if (localLike.includes(id)) {
+            return likes + 1
+        } else return likes
     }
 
     if (loading) {
@@ -128,18 +200,18 @@ const Posts = () => {
       }
 
   return (
-    <div>
+    <div >
         <div className='flex justify-center mb-3'>
-        <select value={select} onChange={(e) => setSelect(e.target.value)} className="bg-[#115999] pl-1  rounded-full text-2xl">
+        <select value={select} onChange={(e) => setSelect(e.target.value)} className="bg-[#115999] pl-1 rounded-full text-2xl">
             <option value="Media">Media</option>
             <option value="Text">Text</option>
         </select>
         </div>
         
         {posts.length > 0 && posts.map((post, index) => (
-            <div key={index} className='break-words flex justify-center'>
+            <div key={index} className='break-words flex justify-center '>
             {swap(post) && ((post.media_attachments.length > 0 && post.media_attachments[0].type != "unknown") || post) && <div>
-                <div className='bg-[#113e85] pl- mb-5 sm:w-[400px] w-[340px] rounded-[20px] py-3'>
+                <div className='bg-[#113e85] mb-5 sm:w-[400px] max-sm:w-[95vw]  rounded-[20px] pt-3 pb-1'>
     
                 <div className='flex items-center mx-3'>
                 <img className='w-[70px] object-cover rounded-full' src={post.account.avatar}/>
@@ -151,7 +223,7 @@ const Posts = () => {
                 {post.media_attachments.length > 0 && <div className={`px-3 ${css(post.media_attachments)} ${css2(post.media_attachments)} space-x-3 flex overflow-x-auto pb-[3px]`}>
                     
                     {post.media_attachments.map((media, index) => (
-                        <div key={index} className='mt-3 flex-shrink-0 flex items-center'>
+                        <div key={index} className={`mt-3 flex items-center ${css4(post.media_attachments)}`}>
                             { <div className=''>
                             {media.type === "image" && <img className={`${css3(post.media_attachments)} border-[4px] border-[#0e1d36] rounded-[20px]`} src={media.url}/>}
 
@@ -163,7 +235,7 @@ const Posts = () => {
                             </div>}
 
                             {media.type === "audio" && (
-                            <audio controls className={`${css3(post.media_attachments)}`}>
+                            <audio controls className={`${css5(post.media_attachments)}`}>
                             <source src={media.url} type="audio/mp3" />
                             Your browser does not support the audio element.
                             </audio>
@@ -174,6 +246,23 @@ const Posts = () => {
                     ))}
 
                     </div>}
+
+                    <div className='sm:pl-7 pl-6 mt-3 mb-1 w-full flex items-center justify-between sm:w-[390px] pr-5'>
+                        <div className='flex  items-center space-x-[5px]'>
+                    {!likedPost(post.id) && <FontAwesomeIcon onClick={() => likePost(post.id)} className='w-8 h-8' icon={faHeart}/>}
+                    {likedPost(post.id) && <FontAwesomeIcon onClick={() => unlikePost(post.id)} className='w-8 h-8 text-red-500' icon={solidHeart}/>}    
+                        <p className='text-xl font-[500]'>{likedPosts(post.id, post.favourites_count)}</p>
+                        </div>
+
+                        <div className='ml-[px] flex space-x-[5px]'>
+                        <FontAwesomeIcon className=' w-8 h-8 -10' icon={faReply}/>
+                        <p className='text-xl font-[500] mt-[3px]'>{post.replies_count}</p>
+                        </div>
+
+                        <div className='mb-[px]'>
+                        <FontAwesomeIcon className='bg-[#0e1d36] rounded-full px-3 w-8 h-8 -10' icon={faEllipsisH}/>
+                        </div>
+                    </div>
 
                 </div>
                 </div>}
