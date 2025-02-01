@@ -16,13 +16,10 @@ const Posts = () => {
     const max_id = useSelector((state) => state.posts.maxId);
     const since_id = useSelector((state) => state.posts.sinceId);
     const posts = allPosts.slice(0, num)
-    const [wait, setWait] = useState(false) 
     const [loading2, setLoading2] = useState(false)
     const [localLike, setLocalLike] = useState([])
     const isFetchingRef = useRef(false)
 
-    console.log(posts)
-    console.log(allPosts)
     console.log(allPosts.length ,num)
 
     const get10posts = async (currentNum) => {
@@ -41,17 +38,14 @@ const Posts = () => {
 
         } else {
             const data = await response.json()
-            console.log(data)
             const max = data[data.length - 1].id
             const since = allPosts.length > 0 ? allPosts[0].id : null
-            console.log(max, since)
             dispatch(addPosts(data))
             dispatch(addId({max, since}))
             } 
             } catch (error) {
                 console.error(error.message)
               } finally {
-                setWait(false)
                 setLoading(false)
                 setLoading2(false)
                 isFetchingRef.current = false
