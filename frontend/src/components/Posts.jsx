@@ -157,7 +157,7 @@ const Posts = () => {
 
     const css3 = (array) => {
         if (array.length === 1) {
-            return 'max-sm:w-[95vw]'
+            return 'w-[380px] max-sm:w-[95vw]'
         } else return 'w-[300px] max-sm:w-[75vw]'
     }
 
@@ -218,7 +218,7 @@ const Posts = () => {
 
                 <div className='text-2xl mx-3 mt-3 font-[] overflow-wrap' dangerouslySetInnerHTML={{ __html: post.content }} />
                 
-                {post.media_attachments.length > 0 && <div className={`px-3 ${css(post.media_attachments)} ${css2(post.media_attachments)} space-x-3 flex overflow-x-auto pb-[3px]`}>
+                {post.media_attachments.length > 0 && <div className={`px-3 ${css(post.media_attachments)} ${css2(post.media_attachments)} space-x-3 flex overflow-x-auto`}>
                     
                     {post.media_attachments.map((media, index) => (
                         <div key={index} className={`mt-3 flex items-center ${css4(post.media_attachments)}`}>
