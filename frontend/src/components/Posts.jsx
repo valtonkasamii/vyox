@@ -110,21 +110,16 @@ const Posts = () => {
         const handleScroll = () => {
           const scrollPosition = window.scrollY + window.innerHeight;
           const pageHeight = document.documentElement.scrollHeight;
-          const threshold = pageHeight * 0.9; // 90% of the page height
-    
-          if (scrollPosition >= threshold) {
+          if (scrollPosition >= pageHeight - 1) {
             const outside = num + 20
-            if (allPosts.length >= num || (num - 20) < allPosts.length) {
+            if (allPosts.length >= (num - 20)) {
                 setNum(outside)
             }
             dispatch(addRefresh(outside))
             if (!isFetchingRef.current) {
                 isFetchingRef.current = true
-
-                if ((num - 20) < allPosts.length) {
-                    setNum(outside)
-                }
                 get10posts(outside)
+                
             }
             }
         };
@@ -226,7 +221,7 @@ const Posts = () => {
                             {media.type === "image" && <img className={`${css3(post.media_attachments)} border-[4px] border-[#0e1d36] rounded-[20px]`} src={media.url}/>}
 
                             {(media.type === "video" || media.type === "gifv") && <div> 
-                            <video className={`${css3(post.media_attachments)} rounded-[20px] border-[3px] border-[#0e1d36]`} controls>
+                            <video className={`${css3(post.media_attachments)} rounded-[20px] border-[4px] border-[#0e1d36]`} controls>
                             <source src={media.url} type="video/mp4"/>
                             Your browser does not support the video tag.
                           </video>
@@ -245,16 +240,16 @@ const Posts = () => {
 
                     </div>}
 
-                    <div className='sm:pl-7 pl-6 mt-3 mb-1 w-full flex items-center justify-between sm:w-[390px] pr-5'>
-                        <div className='flex  items-center space-x-[5px]'>
+                    <div className='mt-3 mb-1 w-full sm:pl-3 sm:space-x-20 flex items-center max-sm:justify-between max-sm:px-10 justify-center sm:w-[390px]'>
+                        <div className='flex mt-[-6px] items-center space-x-[5px]'>
                     {!likedPost(post.id) && <FontAwesomeIcon onClick={() => likePost(post.id)} className='w-8 h-8' icon={faHeart}/>}
                     {likedPost(post.id) && <FontAwesomeIcon onClick={() => unlikePost(post.id)} className='w-8 h-8 text-red-500' icon={solidHeart}/>}    
                         <p className='text-xl font-[500]'>{likedPosts(post.id, post.favourites_count)}</p>
                         </div>
 
-                        <div className='ml-[px] flex space-x-[5px]'>
+                        <div className='ml-[px] mt-[-3px] flex space-x-[5px]'>
                         <FontAwesomeIcon className=' w-8 h-8 -10' icon={faReply}/>
-                        <p className='text-xl font-[500] mt-[3px]'>{post.replies_count}</p>
+                        <p className='text-xl font-[500] mt-[1.5px]'>{post.replies_count}</p>
                         </div>
 
                         <div className='mb-[px]'>
@@ -266,7 +261,7 @@ const Posts = () => {
                 </div>}
             </div>
         ))}
-        {loading2 && <div className='flex justify-center'> 
+        {loading2 && num >= allPosts.length && <div className='flex justify-center'> 
             <div className='flex justify-center text-4xl px-4 pt-[6px] py-2 border-2 w-fit rounded-[15px] mt-[-5px] mb-3'>
             Loading
             </div>
