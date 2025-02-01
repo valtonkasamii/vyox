@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import { useDispatch } from 'react-redux';
 import { addPosts, addRefresh, deletePost, addId } from '../reducers/postsReducer.js';
 import { useSelector } from 'react-redux';
@@ -19,6 +19,7 @@ const Posts = () => {
     const [wait, setWait] = useState(false) 
     const [loading2, setLoading2] = useState(false)
     const [localLike, setLocalLike] = useState([])
+    const isFetchingRef = useRef(false)
 
     console.log(posts)
     console.log(allPosts)
@@ -28,7 +29,6 @@ const Posts = () => {
       if (refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) {
         try {  
             setLoading2(true)
-            setWait(true)
         const response = await fetch('http://127.0.0.1:5000/posts', {
                 credentials: 'include',
                 method: 'POST',
@@ -54,8 +54,10 @@ const Posts = () => {
                 setWait(false)
                 setLoading(false)
                 setLoading2(false)
+                isFetchingRef.current = false
               }
         } else {
+            isFetchingRef.current = false
             setLoading(false)
         }
         
@@ -122,7 +124,9 @@ const Posts = () => {
                 setNum(outside)
             }
             dispatch(addRefresh(outside))
-            if (!wait) {
+            if (!isFetchingRef.current) {
+                isFetchingRef.current = true
+
                 if ((num - 20) < allPosts.length) {
                     setNum(outside)
                 }
