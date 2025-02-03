@@ -222,16 +222,15 @@ const Posts = () => {
         }
     }
     
-    const corruptedfiles = () => {
+    const corruptedfiles = (post) => {
         //map if images more than 1 and atleast 1 of them is working image
         //if image is 1 and corrupted return false
-        //check if no text && no image
     }
 
     if (loading) {
         return <div className="flex flex-col justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-[30px] border-2'>Loading</h1></div>
       }
-
+console.log(posts)
   return (
     <div >
         <div className='flex max-xss:flex-col items-center max-xss:space-y-3 xss:justify-center mb-3 space-x-2'>
@@ -265,13 +264,13 @@ const Posts = () => {
 
         {posts.length > 0 && posts.map((post, index) => (
             <div key={index} className='break-words flex justify-center '>
-            {swap(post) && ((post.media_attachments.length > 0 && post.media_attachments[0].type != "unknown") || post) && <div>
+            {swap(post) && ((post.media_attachments.length > 0 && post.media_attachments[0].type != "unknown") || post.content.length > 0) && <div>
                 <div className='bg-[#113e85] mb-5 sm:w-[400px] max-sm:w-[95vw]  rounded-[20px] pt-3 pb-1'>
     
-                <div className='flex items-center mx-3'>
+                <a href={`/${post.account.acct}`}><div className='flex items-center mx-3'>
                 <img className='w-[70px] object-cover rounded-full' src={post.account.avatar}/>
                 <p className='break-all text-2xl ml-3 font-[500]'>@{post.account.username}</p>
-                </div>
+                </div></a>
 
                 <div className='text-2xl mx-3 mt-3 font-[] overflow-wrap  items-end'>
                 {!moreToggle.includes(post.id) && <div dangerouslySetInnerHTML={{ __html: moreText(post.content)}} />}

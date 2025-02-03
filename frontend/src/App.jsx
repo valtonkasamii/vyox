@@ -6,6 +6,7 @@ import { Navigate, Route, Routes } from "react-router-dom"
 import Navbar from './components/Navbar.jsx'
 import Auth from './pages/Auth.jsx'
 import Home from './pages/Home.jsx'
+import Profile from './pages/Profile.jsx'
 
 function App() {
   const [auth, setAuth] = useState(null)
@@ -39,11 +40,12 @@ function App() {
   }
   return (
     <>
-    {auth && <Navbar />}
+    {auth && <Navbar profile={auth}/>}
         <Routes>
         <Route path='/' element={auth ? <Home /> : <Navigate to='/login'/>}/>
         <Route path='/login' element={!auth ? <Auth /> : <Navigate to='/'/>}/>
         <Route path='*' element={!auth ? <Navigate to='/login'/> : <Navigate to='/'/>}/>
+        <Route path='/:username' element={auth ? <Profile user={auth}/> : <Navigate to="/login"/>} />
         </Routes>
     </>
   )
