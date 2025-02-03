@@ -2,12 +2,13 @@ import React, {useEffect, useState, useRef} from 'react'
 import { useDispatch } from 'react-redux';
 import { addPosts, addRefresh, deletePost, addId } from '../reducers/postsReducer.js';
 import { useSelector } from 'react-redux';
-import { faHeart as solidHeart, faReply, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as solidHeart, faReply, faEllipsisH, faImage } from '@fortawesome/free-solid-svg-icons';
 import { faHeart } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Posts = () => {
     const [select, setSelect] = useState('Media')
+    const [select2, setSelect2] = useState('Explore')
     const [loading, setLoading] = useState(true)
     const [num, setNum] = useState(0)
     const dispatch = useDispatch();
@@ -19,7 +20,10 @@ const Posts = () => {
     const [loading2, setLoading2] = useState(false)
     const [localLike, setLocalLike] = useState([])
     const isFetchingRef = useRef(false)
-
+    const [create, setCreate] = useState(false)
+    const seeMore = posts.filter(post => post.content.length >= 90).map(post => post.id)
+    const [moreToggle, setMoreToggle] = useState([])
+    
     console.log(allPosts.length ,num)
 
     const get10posts = async (currentNum) => {
@@ -91,6 +95,18 @@ const Posts = () => {
             console.error('Error:', error);
         }
     };
+
+    const selectWidth = (select) => {
+        if (select === 'Text') {
+            return 'w-[74px]'
+        }
+    }
+
+    const select2Width = (select) => {
+        if (select === 'Explore') {
+            return 'w-[116px]'
+        }
+    }
     
     useEffect(() => {
         const outside = num + 20
@@ -188,19 +204,65 @@ const Posts = () => {
         } else return likes
     }
 
+    const moreText = (text, id) => {
+        if (text.length > 90 && !id) {
+            return text.substring(0, 74) + '...'
+        } else if (text && !id) {
+            return text
+        } else if (id) {
+            return seeMore.includes(id)
+        }
+    }
+
+   const moreFunc = (id) => {
+        if (moreToggle.includes(id)) {
+            setMoreToggle(moreToggle.filter(more => more != id))
+        } else {
+            setMoreToggle([...moreToggle, id])
+        }
+    }
+    
+    const corruptedfiles = () => {
+        //map if images more than 1 and atleast 1 of them is working image
+        //if image is 1 and corrupted return false
+        //check if no text && no image
+    }
+
     if (loading) {
         return <div className="flex flex-col justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-[30px] border-2'>Loading</h1></div>
       }
 
   return (
     <div >
-        <div className='flex justify-center mb-3'>
-        <select value={select} onChange={(e) => setSelect(e.target.value)} className="bg-[#115999] pl-1 rounded-full text-2xl">
+        <div className='flex max-xss:flex-col items-center max-xss:space-y-3 xss:justify-center mb-3 space-x-2'>
+        <select value={select} onChange={(e) => setSelect(e.target.value)} className={`${selectWidth(select)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
             <option value="Media">Media</option>
             <option value="Text">Text</option>
         </select>
+        <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`${select2Width(select2)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
+            <option value="Explore">Explore</option>
+            <option value="Following">Following</option>
+        </select>
+        <button onClick={() => setCreate(!create)} className='hover:bg-[#115999] rounded-full h-[31px] w-[31px] bg-blue-600 flex items-center justify-center text-4xl'>+</button>        
+        </div>
+    
+       {create && <div className='flex justify-center mb-4 px-2'>
+        <div className='flex flex-col items-center bg-[#113e85] rounded-[20px] px-4 pt-2 pb-2'>
+           <div className='flex justify-between w-full pr-3 pl-2'>
+           <h2 className='text-2xl font-[500]'>Make a Post!</h2>
+           <button onClick={() => setCreate(false)} className='px-3 max-sxx:h-8 bg-[#0e1d36] rounded-full font-[600] border-[3px] border-blue-600 mb-2'>^^^</button>
+            </div>
+        <input type='text' className='bg-[#0e1d36] border- w-[270px] max-sxx:w-full h-12 text-xl px-3 rounded-full' placeholder='Type your caption here...'/>
+        
+        <div className='mt-2 flex justify-between w-full items-center'>
+        <button className='bg-[#0e1d36] h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'><FontAwesomeIcon className='text-xl mt-[0.5px]' icon={faImage}/></button>
+        <p className='text-3xl text-blue-300'>-------------</p>
+        <button className='font-[500] text-xl bg-[#0e1d36] px-3  rounded-full border-[3px] border-blue-600'>{`>>>`}</button>
         </div>
         
+        </div>
+        </div>}
+
         {posts.length > 0 && posts.map((post, index) => (
             <div key={index} className='break-words flex justify-center '>
             {swap(post) && ((post.media_attachments.length > 0 && post.media_attachments[0].type != "unknown") || post) && <div>
@@ -211,7 +273,12 @@ const Posts = () => {
                 <p className='break-all text-2xl ml-3 font-[500]'>@{post.account.username}</p>
                 </div>
 
-                <div className='text-2xl mx-3 mt-3 font-[] overflow-wrap' dangerouslySetInnerHTML={{ __html: post.content }} />
+                <div className='text-2xl mx-3 mt-3 font-[] overflow-wrap  items-end'>
+                {!moreToggle.includes(post.id) && <div dangerouslySetInnerHTML={{ __html: moreText(post.content)}} />}
+                {moreToggle.includes(post.id) && <div dangerouslySetInnerHTML={{ __html: post.content}} />}
+                {!moreToggle.includes(post.id) && moreText("hello", post.id) && <div onClick={() => moreFunc(post.id)} className='cursor-pointer bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See More</div>}
+                {moreToggle.includes(post.id) && moreText("hello", post.id) && <div onClick={() => moreFunc(post.id)} className='cursor-pointer bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See Less</div>}
+                </div>
                 
                 {post.media_attachments.length > 0 && <div className={`px-3 ${css(post.media_attachments)} ${css2(post.media_attachments)} space-x-3 flex overflow-x-auto`}>
                     
