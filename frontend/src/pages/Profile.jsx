@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react'
+import Posts from '../components/Posts.jsx';
 
 const Profile = ({user}) => {
     const fileInputRef = useRef(null);
@@ -42,9 +43,10 @@ const Profile = ({user}) => {
         }, [])
         
   return (
+    <div className='space-y-3'>
     <div className='text-3xl mt-[95px] border-b-[2px] border-blue-800 pb-4'>
         {profile && <div className='flex justify-center mb-3'>
-            <h1 className='text-2xl px-3 bg-gray-800 border-blue-600 border-[3px] font-[500] pb-[4.5px] pt-[3px] rounded-full'>@{profile.username}</h1>
+            <h1 className='text-2xl break-all px-3 bg-gray-800 border-blue-600 border-[3px] font-[500] pb-[4.5px] pt-[3px] rounded-full'>@{profile.username}</h1>
             </div>}
 
         {profile &&<div className='space-x-4 mx-3 flex items-center justify-center'> <div className='flex flex-col justify-center items-center space-y-3'>
@@ -71,7 +73,8 @@ const Profile = ({user}) => {
         </div>
         
         </div>}
-        
+    </div>
+    {profile && user && <Posts profile={profile} user={user} />}
     </div>
   )
 }

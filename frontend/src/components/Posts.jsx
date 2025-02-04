@@ -6,31 +6,36 @@ import { faHeart as solidHeart, faReply, faEllipsisH, faImage } from '@fortaweso
 import { faHeart } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const Posts = () => {
+const Posts = ({profile, user}) => {
     const [select, setSelect] = useState('Media')
     const [select2, setSelect2] = useState('Explore')
     const [loading, setLoading] = useState(true)
     const [num, setNum] = useState(0)
     const dispatch = useDispatch();
     const allPosts = useSelector((state) => state.posts.posts);
+    const [profilePosts, setProfilePosts] = useState([])
     const refresh = useSelector((state) => state.posts.refresh);
     const max_id = useSelector((state) => state.posts.maxId);
     const since_id = useSelector((state) => state.posts.sinceId);
-    const posts = allPosts.slice(0, num)
+    const [postSwitcher, setPostSwitcher] = useState([]) 
+    const posts = postSwitcher.slice(0, num)
     const [loading2, setLoading2] = useState(false)
     const [localLike, setLocalLike] = useState([])
     const isFetchingRef = useRef(false)
     const [create, setCreate] = useState(false)
     const seeMore = posts.filter(post => post.content.length >= 90).map(post => post.id)
     const [moreToggle, setMoreToggle] = useState([])
-    
-    console.log(allPosts.length ,num)
+    const [profileMax, setProfileMax] = useState(null)
+
+    console.log(allPosts.length, profilePosts.length ,num)
 
     const get10posts = async (currentNum) => {
-      if (refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) {
+      if (((refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) || profile)) {
         try {  
             setLoading2(true)
-        const response = await fetch('http://127.0.0.1:5000/posts', {
+            let response
+            if (!profile) {
+         response = await fetch('http://127.0.0.1:5000/posts', {
                 credentials: 'include',
                 method: 'POST',
                 headers: {
@@ -38,14 +43,38 @@ const Posts = () => {
                 },
                 body: JSON.stringify({max_id, since_id})            
             })
+        } else {
+            const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
+            const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
+            let url
+            if (profileMax) {
+                url = `${mastodonServer}/api/v1/accounts/${profile.id}/statuses?limit=40&max_id=${profileMax}`                
+            } else {
+                url = `${mastodonServer}/api/v1/accounts/${profile.id}/statuses?limit=40`
+            }
+            response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                    }
+            })
+        }
         if (!response.ok) {
 
         } else {
             const data = await response.json()
             const max = data[data.length - 1].id
             const since = allPosts.length > 0 ? allPosts[0].id : null
+            if (!profile) {
             dispatch(addPosts(data))
             dispatch(addId({max, since}))
+            } else {
+                setProfileMax(max)
+                if (profilePosts.length > 0) {
+                    setProfilePosts([...profilePosts, ...data])
+                } else {
+                    setProfilePosts(data)
+                }
+            }
             } 
             } catch (error) {
                 console.error(error.message)
@@ -60,7 +89,7 @@ const Posts = () => {
         }
         
     } 
-    
+    console.log(profilePosts)
     const toggleLike = async (postId, isLiked) => {
         const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
@@ -110,17 +139,36 @@ const Posts = () => {
     
     useEffect(() => {
         const outside = num + 20
-         dispatch(deletePost());
+         //dispatch(deletePost());
          setNum(outside)
-         dispatch(addRefresh(outside));
+         //dispatch(addRefresh(outside));
          get10posts(outside)
+         if (!profile) {
+            setPostSwitcher(allPosts)
+         }
         }, [])
 
-    useEffect(() => {
+        useEffect(() => {
+            if (profile) {
+                setPostSwitcher(profilePosts)
+             }
+        }, [profilePosts])
+
+        useEffect(() => {
+            if (!profile) {
         if (allPosts.length != 0) {
             setLoading(false)
         } else setLoading(true)
+    }
     }, [allPosts])
+
+    useEffect(() => {
+    if (profile) {
+        if (profilePosts.length != 0) {
+        setLoading(false)
+        } else setLoading(true)
+    }
+    }, [profilePosts])
 
     useEffect(() => {
         const handleScroll = () => {
@@ -129,13 +177,22 @@ const Posts = () => {
           if (scrollPosition >= pageHeight - 1) {
             const outside = num + 20
             if (allPosts.length >= (num - 20)) {
-                setNum(outside)
+                if (!profile) {
+                    setNum(outside)
+                } else if (profile && posts.length >= 20) {
+                    setNum(outside)
+                }
             }
-            dispatch(addRefresh(outside))
+            if (!profile){
+                dispatch(addRefresh(outside))
+            }
             if (!isFetchingRef.current) {
                 isFetchingRef.current = true
-                get10posts(outside)
-                
+                if(!profile) {
+                    get10posts(outside)
+                } else if (profile && profilePosts.length >= 40) {
+                    get10posts(outside)
+                }
             }
             }
         };
@@ -230,7 +287,7 @@ const Posts = () => {
     if (loading) {
         return <div className="flex flex-col justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-[30px] border-2'>Loading</h1></div>
       }
-console.log(posts)
+
   return (
     <div >
         <div className='flex max-xss:flex-col items-center max-xss:space-y-3 xss:justify-center mb-3 space-x-2'>
@@ -238,11 +295,11 @@ console.log(posts)
             <option value="Media">Media</option>
             <option value="Text">Text</option>
         </select>
-        <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`${select2Width(select2)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
+        {!profile && <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`${select2Width(select2)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
             <option value="Explore">Explore</option>
             <option value="Following">Following</option>
-        </select>
-        <button onClick={() => setCreate(!create)} className='hover:bg-[#115999] rounded-full h-[31px] w-[31px] bg-blue-600 flex items-center justify-center text-4xl'>+</button>        
+        </select>}
+        {((profile && user.other_data.acct === profile.acct) || !profile) && <button onClick={() => setCreate(!create)} className='hover:bg-[#115999] rounded-full h-[31px] w-[31px] bg-blue-600 flex items-center justify-center text-4xl'>+</button>}        
         </div>
     
        {create && <div className='flex justify-center mb-4 px-2'>

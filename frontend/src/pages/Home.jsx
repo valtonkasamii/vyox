@@ -3,7 +3,7 @@ import Posts from '../components/Posts.jsx'
 const Home = () => {
   return (
     <div className='mt-[95px]'>
-    <Posts />    
+    <Posts profile={false}/>    
     </div>
   )
 }
