@@ -241,8 +241,13 @@ const Posts = ({profile, user}) => {
 
       useEffect(() => {
         setNum(20)
-        get10posts(20)
+        if (!isFetchingRef.current) {
+            isFetchingRef.current = true
+            get10posts(20)
+        }
         if (select2 === "Following") {
+            get10posts(20)
+            isFetchingRef.current = true
             setLoading(true)
         }
       }, [select2])
