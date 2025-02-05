@@ -23,7 +23,8 @@ const Posts = ({profile, user}) => {
     const [localLike, setLocalLike] = useState([])
     const isFetchingRef = useRef(false)
     const [create, setCreate] = useState(false)
-    const seeMore = posts.filter(post => post.content.length >= 90).map(post => post.id)
+    const parser = new DOMParser()
+    const seeMore = posts.filter(post => parser.parseFromString(post.content, "text/html").body.textContent.length >= 100).map(post => post.id)
     const [moreToggle, setMoreToggle] = useState([])
     const [profileMax, setProfileMax] = useState(null)
 
@@ -190,7 +191,7 @@ const Posts = ({profile, user}) => {
                 isFetchingRef.current = true
                 if(!profile) {
                     get10posts(outside)
-                } else if (profile && profilePosts.length >= 40) {
+                } else if (profile && profilePosts.length % 40 === 0) {
                     get10posts(outside)
                 }
             }
@@ -262,8 +263,10 @@ const Posts = ({profile, user}) => {
     }
 
     const moreText = (text, id) => {
-        if (text.length > 90 && !id) {
-            return text.substring(0, 74) + '...'
+        const parser = new DOMParser()
+        if (parser.parseFromString(text, "text/html").body.textContent.length >= 100 && !id) {
+            const doc = parser.parseFromString(text, "text/html")
+            return doc.body.textContent.substring(0, 70) + '...'
         } else if (text && !id) {
             return text
         } else if (id) {
@@ -365,18 +368,18 @@ const Posts = ({profile, user}) => {
 
                     <div className='mt-3 mb-1 w-full sm:pl-3 sm:space-x-20 flex items-center max-sm:justify-between max-sm:px-10 justify-center sm:w-[390px]'>
                         <div className='flex mt-[-6px] items-center space-x-[5px]'>
-                    {!likedPost(post.id) && <FontAwesomeIcon onClick={() => likePost(post.id)} className='w-8 h-8' icon={faHeart}/>}
-                    {likedPost(post.id) && <FontAwesomeIcon onClick={() => unlikePost(post.id)} className='w-8 h-8 text-red-500' icon={solidHeart}/>}    
+                    {!likedPost(post.id) && <FontAwesomeIcon onClick={() => likePost(post.id)} className='cursor-pointer w-8 h-8' icon={faHeart}/>}
+                    {likedPost(post.id) && <FontAwesomeIcon onClick={() => unlikePost(post.id)} className='cursor-pointer w-8 h-8 text-red-500' icon={solidHeart}/>}    
                         <p className='text-xl font-[500]'>{likedPosts(post.id, post.favourites_count)}</p>
                         </div>
 
                         <div className='ml-[px] mt-[-3px] flex space-x-[5px]'>
-                        <FontAwesomeIcon className=' w-8 h-8 -10' icon={faReply}/>
+                        <FontAwesomeIcon className='cursor-pointer w-8 h-8 -10' icon={faReply}/>
                         <p className='text-xl font-[500] mt-[1.5px]'>{post.replies_count}</p>
                         </div>
 
                         <div className='mb-[px]'>
-                        <FontAwesomeIcon className='bg-[#0e1d36] rounded-full px-3 w-8 h-8 -10' icon={faEllipsisH}/>
+                        <FontAwesomeIcon className='cursor-pointer bg-[#0e1d36] rounded-full px-3 w-8 h-8 -10' icon={faEllipsisH}/>
                         </div>
                     </div>
 
