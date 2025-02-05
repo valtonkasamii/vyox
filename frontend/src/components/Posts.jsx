@@ -14,6 +14,7 @@ const Posts = ({profile, user}) => {
     const dispatch = useDispatch();
     const allPosts = useSelector((state) => state.posts.posts);
     const [profilePosts, setProfilePosts] = useState([])
+    const [followingPosts, setFollowingPosts] = useState([])
     const refresh = useSelector((state) => state.posts.refresh);
     const max_id = useSelector((state) => state.posts.maxId);
     const since_id = useSelector((state) => state.posts.sinceId);
@@ -24,18 +25,19 @@ const Posts = ({profile, user}) => {
     const isFetchingRef = useRef(false)
     const [create, setCreate] = useState(false)
     const parser = new DOMParser()
-    const seeMore = posts.filter(post => parser.parseFromString(post.content, "text/html").body.textContent.length >= 100).map(post => post.id)
     const [moreToggle, setMoreToggle] = useState([])
-    const [profileMax, setProfileMax] = useState(null)
+    const [localMax, setLocalMax] = useState(null)
 
     console.log(allPosts.length, profilePosts.length ,num)
 
     const get10posts = async (currentNum) => {
-      if (((refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) || profile)) {
+        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
+        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
+      if (((refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) || profile || select2 === "Following")) {
         try {  
             setLoading2(true)
             let response
-            if (!profile) {
+            if (!profile && select2 === "Explore") {
          response = await fetch('http://127.0.0.1:5000/posts', {
                 credentials: 'include',
                 method: 'POST',
@@ -44,12 +46,10 @@ const Posts = ({profile, user}) => {
                 },
                 body: JSON.stringify({max_id, since_id})            
             })
-        } else {
-            const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
-            const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
+        } else if (profile) {
             let url
-            if (profileMax) {
-                url = `${mastodonServer}/api/v1/accounts/${profile.id}/statuses?limit=40&max_id=${profileMax}`                
+            if (localMax) {
+                url = `${mastodonServer}/api/v1/accounts/${profile.id}/statuses?limit=40&max_id=${localMax}`                
             } else {
                 url = `${mastodonServer}/api/v1/accounts/${profile.id}/statuses?limit=40`
             }
@@ -58,22 +58,43 @@ const Posts = ({profile, user}) => {
                         'Authorization': `Bearer ${accessToken}`,
                     }
             })
-        }
+        } else if (!profile && select2 === "Following") {
+            let url
+            if (localMax) {
+                url = `${mastodonServer}/api/v1/timelines/home?limit=40&max_id=${localMax}`                
+            } else {
+                url = `${mastodonServer}/api/v1/timelines/home?limit=40`
+            }
+            
+            response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                }
+        })
+    }
+
         if (!response.ok) {
 
         } else {
             const data = await response.json()
             const max = data[data.length - 1].id
             const since = allPosts.length > 0 ? allPosts[0].id : null
-            if (!profile) {
+            if (!profile && select2 === "Explore") {
             dispatch(addPosts(data))
             dispatch(addId({max, since}))
-            } else {
-                setProfileMax(max)
+            } else if (profile) {
+                setLocalMax(max)
                 if (profilePosts.length > 0) {
                     setProfilePosts([...profilePosts, ...data])
                 } else {
                     setProfilePosts(data)
+                }
+            } else if (!profile && select2 === "Following") {
+                setLocalMax(max)
+                if (followingPosts.length > 0) {
+                    setFollowingPosts([...followingPosts, ...data])
+                } else {
+                    setFollowingPosts(data)
                 }
             }
             } 
@@ -90,7 +111,7 @@ const Posts = ({profile, user}) => {
         }
         
     } 
-    console.log(profilePosts)
+
     const toggleLike = async (postId, isLiked) => {
         const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
@@ -140,12 +161,15 @@ const Posts = ({profile, user}) => {
     
     useEffect(() => {
         const outside = num + 20
-         //dispatch(deletePost());
-         setNum(outside)
-         //dispatch(addRefresh(outside));
-         get10posts(outside)
-         if (!profile) {
+         if (!profile && select2 != "Following") {
+            //dispatch(deletePost());
+            setNum(outside)
+            //dispatch(addRefresh(outside));
+            get10posts(outside)
             setPostSwitcher(allPosts)
+         } else {
+            setNum(outside)
+            get10posts(outside)
          }
         }, [])
 
@@ -177,14 +201,14 @@ const Posts = ({profile, user}) => {
           const pageHeight = document.documentElement.scrollHeight;
           if (scrollPosition >= pageHeight - 1) {
             const outside = num + 20
-            if (allPosts.length >= (num - 20)) {
+            if ((postSwitcher === allPosts && allPosts.length >= (num - 20)) || (postSwitcher === profilePosts && profilePosts.length >= (num - 20)) || (postSwitcher === followingPosts && followingPosts.length >= (num - 20))) {
                 if (!profile) {
                     setNum(outside)
                 } else if (profile && posts.length >= 20) {
                     setNum(outside)
                 }
             }
-            if (!profile){
+            if (!profile && select2 != "Following"){
                 dispatch(addRefresh(outside))
             }
             if (!isFetchingRef.current) {
@@ -205,6 +229,22 @@ const Posts = ({profile, user}) => {
         };
     }
       }, [posts]);
+
+      useEffect(() => {
+        setNum(20)
+        get10posts(20)
+        if (select2 === "Following") {
+            setLoading(true)
+        }
+      }, [select2])
+
+    useEffect(() => {
+        if (select2 === "Following") {
+            setPostSwitcher(followingPosts)
+        } else {
+            setPostSwitcher(allPosts)
+        }
+    }, [followingPosts, select2])
 
     const swap = (post) => {
         if (select === 'Media') {
@@ -262,11 +302,18 @@ const Posts = ({profile, user}) => {
         } else return likes
     }
 
+    const insertSpaceAfterTags = (html, tags = ['a', 'u']) => {
+        const regex = new RegExp(`</(${tags.join('|')})>`, 'gi');
+        return html.replace(regex, '</$1> ');
+      };
+
+    const seeMore = posts.filter(post => parser.parseFromString(insertSpaceAfterTags(post.content, ['a', 'u']), "text/html").body.innerText.length >= 100).map(post => post.id)
+
     const moreText = (text, id) => {
-        const parser = new DOMParser()
-        if (parser.parseFromString(text, "text/html").body.textContent.length >= 100 && !id) {
-            const doc = parser.parseFromString(text, "text/html")
-            return doc.body.textContent.substring(0, 70) + '...'
+        const modifiedHTML = insertSpaceAfterTags(text, ['a', 'u'])
+        if (parser.parseFromString(modifiedHTML, "text/html").body.textContent.length >= 100 && !id) {
+            const doc = parser.parseFromString(modifiedHTML, "text/html")
+            return doc.body.innerText.replace(/\s+/g, ' ').trim().substring(0, 70) + '...'
         } else if (text && !id) {
             return text
         } else if (id) {
