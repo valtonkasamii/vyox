@@ -28,7 +28,7 @@ const Posts = ({profile, user}) => {
     const [moreToggle, setMoreToggle] = useState([])
     const [localMax, setLocalMax] = useState(null)
 
-    console.log(allPosts.length, profilePosts.length ,num)
+    console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
 
     const get10posts = async (currentNum) => {
         const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
@@ -162,14 +162,20 @@ const Posts = ({profile, user}) => {
     useEffect(() => {
         const outside = num + 20
          if (!profile && select2 != "Following") {
-            //dispatch(deletePost());
+            dispatch(deletePost());
             setNum(outside)
-            //dispatch(addRefresh(outside));
+            dispatch(addRefresh(outside));
+            if (!isFetchingRef.current) {
+                isFetchingRef.current = true
             get10posts(outside)
+            }
             setPostSwitcher(allPosts)
          } else {
             setNum(outside)
+            if (!isFetchingRef.current) {
+                isFetchingRef.current = true
             get10posts(outside)
+            }
          }
         }, [])
 
@@ -180,6 +186,9 @@ const Posts = ({profile, user}) => {
         }, [profilePosts])
 
         useEffect(() => {
+            if (!profile && select2 != "Following") {
+                setPostSwitcher(allPosts)
+            }
             if (!profile) {
         if (allPosts.length != 0) {
             setLoading(false)
@@ -434,7 +443,7 @@ const Posts = ({profile, user}) => {
                 </div>}
             </div>
         ))}
-        {loading2 && num >= allPosts.length && <div className='flex justify-center'> 
+        {((loading2 && num >= allPosts.length) || select2 === "Explore" && allPosts.length === 0) && <div className='flex justify-center'> 
             <div className='flex justify-center text-4xl px-4 pt-[6px] py-2 border-2 w-fit rounded-[15px] mt-[-5px] mb-3'>
             Loading
             </div>
