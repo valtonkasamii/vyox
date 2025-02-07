@@ -7,7 +7,7 @@ import { faHeart } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Posts = ({profile, user}) => {
-    const [select, setSelect] = useState('Media')
+    const [select, setSelect] = useState('Text')
     const [select2, setSelect2] = useState('Explore')
     const [loading, setLoading] = useState(true)
     const [num, setNum] = useState(0)
@@ -27,6 +27,8 @@ const Posts = ({profile, user}) => {
     const parser = new DOMParser()
     const [moreToggle, setMoreToggle] = useState([])
     const [localMax, setLocalMax] = useState(null)
+    const [caption, setCaption] = useState('')
+    const [createWait, setCreateWait] = useState(false)
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
 
@@ -58,14 +60,14 @@ const Posts = ({profile, user}) => {
                         'Authorization': `Bearer ${accessToken}`,
                     }
             })
-        } else if (!profile && select2 === "Following") {
+        } else if (((!profile && select2 === "Following"))) {
             let url
-            if (localMax) {
+            if (localMax && followingPosts.length != 0) {
                 url = `${mastodonServer}/api/v1/timelines/home?limit=40&max_id=${localMax}`                
             } else {
                 url = `${mastodonServer}/api/v1/timelines/home?limit=40`
             }
-            
+            console.log(url)
             response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -89,12 +91,19 @@ const Posts = ({profile, user}) => {
                 } else {
                     setProfilePosts(data)
                 }
-            } else if (!profile && select2 === "Following") {
+            } else if (((!profile && select2 === "Following"))) {
                 setLocalMax(max)
                 if (followingPosts.length > 0) {
                     setFollowingPosts([...followingPosts, ...data])
                 } else {
-                    setFollowingPosts(data)
+                        setNum(20)
+                        setFollowingPosts(data)
+                        console.log(data)
+                        if (creating) {
+                        if (select2 != "Following") {
+                            setSelect2("Following")
+                        }
+                    }
                 }
             }
             } 
@@ -147,6 +156,50 @@ const Posts = ({profile, user}) => {
         }
     };
 
+    const createPost = async (e) => {
+        e.preventDefault()
+        if (createWait === false) {
+        setCreateWait(true)
+        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
+        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
+        try {
+        const response = await fetch(`${mastodonServer}/api/v1/statuses`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({status: caption})
+        })
+
+        if (response.ok) {
+            const data = await response.json()
+
+            console.log(data, followingPosts)
+                setLocalMax(null)
+                setCaption('')
+                if (select2 === "Explore" && !profile) {
+                    setSelect2("Following")
+                } 
+                if (!profile) {
+                    if (!followingPosts.some(post => post.id === data.id)) {
+                    setFollowingPosts([data, ...followingPosts])
+                    }
+                } else {
+                    if (!profilePosts.some(post => post.id === data.id)) {
+                        setProfilePosts([data, ...profilePosts])
+                        }
+                }
+            
+        }
+        } catch (error) {
+            console.error('Error:', error);
+        } finally {
+            setCreateWait(false)
+        }
+    }
+    }
+
     const selectWidth = (select) => {
         if (select === 'Text') {
             return 'w-[74px]'
@@ -162,9 +215,9 @@ const Posts = ({profile, user}) => {
     useEffect(() => {
         const outside = num + 20
          if (!profile && select2 != "Following") {
-            dispatch(deletePost());
+            //dispatch(deletePost());
             setNum(outside)
-            dispatch(addRefresh(outside));
+           // dispatch(addRefresh(outside));
             if (!isFetchingRef.current) {
                 isFetchingRef.current = true
             get10posts(outside)
@@ -246,9 +299,12 @@ const Posts = ({profile, user}) => {
             get10posts(20)
         }
         if (select2 === "Following") {
-            get10posts(20)
+            get10posts(20, false)
             isFetchingRef.current = true
             setLoading(true)
+        } else {
+            setLocalMax(null)
+            setFollowingPosts([])
         }
       }, [select2])
 
@@ -366,22 +422,25 @@ const Posts = ({profile, user}) => {
         {((profile && user.other_data.acct === profile.acct) || !profile) && <button onClick={() => setCreate(!create)} className='hover:bg-[#115999] rounded-full h-[31px] w-[31px] bg-blue-600 flex items-center justify-center text-4xl'>+</button>}        
         </div>
     
-       {create && <div className='flex justify-center mb-4 px-2'>
+       {create && <form onSubmit={createPost} className='flex justify-center mb-4 px-2'>
         <div className='flex flex-col items-center bg-[#113e85] rounded-[20px] px-4 pt-2 pb-2'>
            <div className='flex justify-between w-full pr-3 pl-2'>
            <h2 className='text-2xl font-[500]'>Make a Post!</h2>
-           <button onClick={() => setCreate(false)} className='px-3 max-sxx:h-8 bg-[#0e1d36] rounded-full font-[600] border-[3px] border-blue-600 mb-2'>^^^</button>
+           <button type='button' onClick={() => setCreate(false)} className='px-3 max-sxx:h-8 bg-[#0e1d36] rounded-full font-[600] border-[3px] border-blue-600 mb-2'>^^^</button>
             </div>
-        <input type='text' className='bg-[#0e1d36] border- w-[270px] max-sxx:w-full h-12 text-xl px-3 rounded-full' placeholder='Type your caption here...'/>
-        
+        {!createWait && <input required value={caption} onChange={(e) => setCaption(e.target.value)} type='text' className='bg-[#0e1d36] border- w-[270px] max-sxx:w-full h-12 text-xl px-3 rounded-full' placeholder='Type your caption here...'/>}
+        {createWait && <div className='bg-blue-600 border- w-[270px] max-sxx:w-full h-12 text-xl px-3 rounded-full'></div>}
+
         <div className='mt-2 flex justify-between w-full items-center'>
-        <button className='bg-[#0e1d36] h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'><FontAwesomeIcon className='text-xl mt-[0.5px]' icon={faImage}/></button>
+        {!createWait && <button type='button' className='bg-[#0e1d36] h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'><FontAwesomeIcon className='text-xl mt-[0.5px]' icon={faImage}/></button>}
+        {createWait && <button type='button' className='bg-blue-600 h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'></button>}
         <p className='text-3xl text-blue-300'>-------------</p>
-        <button className='font-[500] text-xl bg-[#0e1d36] px-3  rounded-full border-[3px] border-blue-600'>{`>>>`}</button>
+        {!createWait && <button className='font-[500] text-xl bg-[#0e1d36] px-3  rounded-full border-[3px] border-blue-600'>{`>>>`}</button>}
+        {createWait && <button type='button' className='font-[500] text-xl bg-blue-600 text-blue-600 px-3  rounded-full border-[3px] border-blue-600'>{`>>>`}</button>}
         </div>
         
         </div>
-        </div>}
+        </form>}
 
         {posts.length > 0 && posts.map((post, index) => (
             <div key={index} className='break-words flex justify-center '>
