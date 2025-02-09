@@ -21,7 +21,6 @@ const Posts = ({profile, user}) => {
     const [postSwitcher, setPostSwitcher] = useState([]) 
     const posts = postSwitcher.slice(0, num)
     const [loading2, setLoading2] = useState(false)
-    const [localLike, setLocalLike] = useState([])
     const isFetchingRef = useRef(false)
     const [create, setCreate] = useState(false)
     const parser = new DOMParser()
@@ -71,7 +70,6 @@ const Posts = ({profile, user}) => {
             } else {
                 url = `${mastodonServer}/api/v1/timelines/home?limit=40`
             }
-            console.log(url)
             response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -205,18 +203,12 @@ const Posts = ({profile, user}) => {
                 if (select2 === "Explore" && !profile) {
                     setSelect2("Following")
                 } 
-                console.log(data.id)
-                    if (!profile) {
-                        if (!followingPosts.some(post => post.id === data.id)) {
-                        setFollowingPosts([data, ...followingPosts])
-                        }
-                        
-                    } else {
-                        if (!profilePosts.some(post => post.id === data.id)) {
-                            setProfilePosts([data, ...profilePosts])
-                            }
-                    }
-        }
+                if (!profile) {
+                setFollowingPosts([data, ...followingPosts])      
+                } else {
+                    setProfilePosts([data, ...profilePosts])      
+                }
+         }
         } catch (error) {
             console.error('Error:', error);
         } finally {
@@ -287,12 +279,6 @@ const Posts = ({profile, user}) => {
         }, [])
 
         useEffect(() => {
-            if (profile) {
-                setPostSwitcher(profilePosts)
-             }
-        }, [profilePosts])
-
-        useEffect(() => {
             if (!profile && select2 != "Following") {
                 setPostSwitcher(allPosts)
             }
@@ -305,9 +291,12 @@ const Posts = ({profile, user}) => {
 
     useEffect(() => {
     if (profile) {
+        setPostSwitcher(profilePosts)
+
         if (profilePosts.length != 0) {
         setLoading(false)
         } else setLoading(true)
+
     }
     }, [profilePosts])
 
@@ -370,6 +359,15 @@ const Posts = ({profile, user}) => {
         }
     }, [followingPosts, select2])
 
+    useEffect(() => {
+        if (followingPosts.length > 1) {
+        if (followingPosts[0].id === followingPosts[1].id) {
+           const filteredPosts = followingPosts.filter((post, index) => index !== 0)
+           setFollowingPosts(filteredPosts)
+        }
+    }
+    }, [followingPosts])
+
     const swap = (post) => {
         if (select === 'Media') {
             return post.media_attachments.length > 0
@@ -407,23 +405,23 @@ const Posts = ({profile, user}) => {
     }
 
     const likePost = (id) => {
-        setLocalLike([...localLike, id])
         toggleLike(id, false)
+
+        setPostSwitcher((prevPosts) => 
+            prevPosts.map((post) => 
+                post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post
+            )
+        );
     }
     
     const unlikePost = (id) => {
-        setLocalLike(localLike.filter(oneId => oneId !== id));
         toggleLike(id, true)
-    }
-    
-    const likedPost = (id) => {
-        return localLike.includes(id)
-    }
 
-    const likedPosts = (id, likes) => {
-        if (localLike.includes(id)) {
-            return likes + 1
-        } else return likes
+        setPostSwitcher((prevPosts) => 
+            prevPosts.map((post) => 
+                post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post
+            )
+        );
     }
 
     const insertSpaceAfterTags = (html, tags = ['a', 'u']) => {
@@ -508,7 +506,7 @@ const Posts = ({profile, user}) => {
     if (loading) {
         return <div className="flex flex-col justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-[30px] border-2'>Loading</h1></div>
       }
-
+      console.log(posts)
   return (
     <div >
         <div className='flex max-xss:flex-col items-center max-xss:space-y-3 xss:justify-center mb-3 space-x-2'>
@@ -603,9 +601,9 @@ const Posts = ({profile, user}) => {
 
                     <div className='mt-3 mb-1 w-full sm:pl-3 sm:space-x-20 flex items-center max-sm:justify-between max-sm:px-10 justify-center sm:w-[390px]'>
                         <div className='flex mt-[-6px] items-center space-x-[5px]'>
-                    {!likedPost(post.id) && <FontAwesomeIcon onClick={() => likePost(post.id)} className='cursor-pointer w-8 h-8' icon={faHeart}/>}
-                    {likedPost(post.id) && <FontAwesomeIcon onClick={() => unlikePost(post.id)} className='cursor-pointer w-8 h-8 text-red-500' icon={solidHeart}/>}    
-                        <p className='text-xl font-[500]'>{likedPosts(post.id, post.favourites_count)}</p>
+                    {!post.favourited && <FontAwesomeIcon onClick={() => likePost(post.id)} className='cursor-pointer w-8 h-8' icon={faHeart}/>}
+                    {post.favourited && <FontAwesomeIcon onClick={() => unlikePost(post.id)} className='cursor-pointer w-8 h-8 text-red-500' icon={solidHeart}/>}    
+                        <p className='text-xl font-[500]'>{post.favourites_count}</p>
                         </div>
 
                         <div className='ml-[px] mt-[-3px] flex space-x-[5px]'>
