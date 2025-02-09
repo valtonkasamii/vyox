@@ -42,7 +42,7 @@ function App() {
     <>
     {auth && <Navbar profile={auth}/>}
         <Routes>
-        <Route path='/' element={auth ? <Home /> : <Navigate to='/login'/>}/>
+        <Route path='/' element={auth ? <Home user={auth}/> : <Navigate to='/login'/>}/>
         <Route path='/login' element={!auth ? <Auth /> : <Navigate to='/'/>}/>
         <Route path='*' element={!auth ? <Navigate to='/login'/> : <Navigate to='/'/>}/>
         <Route path='/:username' element={auth ? <Profile user={auth}/> : <Navigate to="/login"/>} />

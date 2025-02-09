@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react'
 import { useDispatch } from 'react-redux';
-import { addPosts, addRefresh, deletePost, addId } from '../reducers/postsReducer.js';
+import { addPosts, addRefresh, addId } from '../reducers/postsReducer.js';
 import { useSelector } from 'react-redux';
 import { faHeart as solidHeart, faReply, faEllipsisH, faImage } from '@fortawesome/free-solid-svg-icons';
 import { faHeart } from '@fortawesome/free-regular-svg-icons'
@@ -29,6 +29,10 @@ const Posts = ({profile, user}) => {
     const [localMax, setLocalMax] = useState(null)
     const [caption, setCaption] = useState('')
     const [createWait, setCreateWait] = useState(false)
+    const [threeList, setThreeList] = useState([])
+    const [deleteWait, setDeleteWait] = useState(false)
+    const [postimg, setPostimg] = useState([])
+    const fileInputRef = useRef(null)
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
 
@@ -99,11 +103,6 @@ const Posts = ({profile, user}) => {
                         setNum(20)
                         setFollowingPosts(data)
                         console.log(data)
-                        if (creating) {
-                        if (select2 != "Following") {
-                            setSelect2("Following")
-                        }
-                    }
                 }
             }
             } 
@@ -163,34 +162,60 @@ const Posts = ({profile, user}) => {
         const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         try {
+            const mediaIds = []
+            if (postimg.length > 0) {
+                for (const img of postimg) {
+                    const formData = new FormData();
+                    formData.append('file', img)
+
+                    const response = await fetch(`${mastodonServer}/api/v1/media`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                        },
+                        body: formData
+                    });
+            
+                    const data = await response.json();
+                    mediaIds.push(data.id)  
+                }
+            }
         const response = await fetch(`${mastodonServer}/api/v1/statuses`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({status: caption})
+            body: JSON.stringify({status: caption, media_ids: mediaIds})
         })
 
         if (response.ok) {
             const data = await response.json()
 
-            console.log(data, followingPosts)
+            if (postimg.length > 0) {
+            setPostimg([])
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+              }
+              setSelect('Media')
+            } else setSelect('Text')
+
                 setLocalMax(null)
                 setCaption('')
                 if (select2 === "Explore" && !profile) {
                     setSelect2("Following")
                 } 
-                if (!profile) {
-                    if (!followingPosts.some(post => post.id === data.id)) {
-                    setFollowingPosts([data, ...followingPosts])
-                    }
-                } else {
-                    if (!profilePosts.some(post => post.id === data.id)) {
-                        setProfilePosts([data, ...profilePosts])
+                console.log(data.id)
+                    if (!profile) {
+                        if (!followingPosts.some(post => post.id === data.id)) {
+                        setFollowingPosts([data, ...followingPosts])
                         }
-                }
-            
+                        
+                    } else {
+                        if (!profilePosts.some(post => post.id === data.id)) {
+                            setProfilePosts([data, ...profilePosts])
+                            }
+                    }
         }
         } catch (error) {
             console.error('Error:', error);
@@ -198,6 +223,35 @@ const Posts = ({profile, user}) => {
             setCreateWait(false)
         }
     }
+    }
+
+    const deletePost = async (id) => {
+        setDeleteWait(true)
+        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
+        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
+        try {
+            const response = await fetch(`${mastodonServer}/api/v1/statuses/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+
+            })
+
+            if (response.ok) {
+                if (!profile) {
+                    const filteredPosts = followingPosts.filter(post => post.id != id)
+                    setFollowingPosts(filteredPosts)
+                } else {
+                    const filteredPosts = profilePosts.filter(post => post.id != id)
+                    setProfilePosts(filteredPosts)
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        } finally {
+            setDeleteWait(false)
+        }
     }
 
     const selectWidth = (select) => {
@@ -309,9 +363,9 @@ const Posts = ({profile, user}) => {
       }, [select2])
 
     useEffect(() => {
-        if (select2 === "Following") {
+        if (select2 === "Following" && !profile) {
             setPostSwitcher(followingPosts)
-        } else {
+        } else if (!profile) {
             setPostSwitcher(allPosts)
         }
     }, [followingPosts, select2])
@@ -404,6 +458,53 @@ const Posts = ({profile, user}) => {
         //if image is 1 and corrupted return false
     }
 
+    const handleThree = (id) => {
+        if (threeList.includes(id)) {
+            const threeFiltered = threeList.filter(ids => ids !== id)
+            setThreeList(threeFiltered)
+        } else {
+            setThreeList([...threeList, id])
+        }
+    }
+
+    const handleImageClick = () => {
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+      };
+
+      const handleFileChange = (e) => {
+        const file = e.target.files[0]
+        
+        if (file) {
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setPostimg([...postimg, reader.result])
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+    
+    const mediaSwitch = (img) => {
+        if (img.startsWith('data:image/')) {
+            return true;
+        } else return false
+}
+
+    const mediaSwitch2 = (img) => {
+        if (img.startsWith('data:video/')) {
+            return true;
+        } else return false
+    }
+
+    const removeMedia = (img) => {
+        const filtered = postimg.filter(imgs => imgs != img)
+        setPostimg(filtered)
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+    }
+
     if (loading) {
         return <div className="flex flex-col justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-[30px] border-2'>Loading</h1></div>
       }
@@ -430,15 +531,29 @@ const Posts = ({profile, user}) => {
             </div>
         {!createWait && <input required value={caption} onChange={(e) => setCaption(e.target.value)} type='text' className='bg-[#0e1d36] border- w-[270px] max-sxx:w-full h-12 text-xl px-3 rounded-full' placeholder='Type your caption here...'/>}
         {createWait && <div className='bg-blue-600 border- w-[270px] max-sxx:w-full h-12 text-xl px-3 rounded-full'></div>}
-
+        <input ref={fileInputRef} onChange={handleFileChange} className='hidden' accept="image/*,video/*" type='file'/>
         <div className='mt-2 flex justify-between w-full items-center'>
-        {!createWait && <button type='button' className='bg-[#0e1d36] h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'><FontAwesomeIcon className='text-xl mt-[0.5px]' icon={faImage}/></button>}
+        {!createWait && <button onClick={handleImageClick} type='button' className='bg-[#0e1d36] h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'><FontAwesomeIcon className='text-xl mt-[0.5px]' icon={faImage}/></button>}
         {createWait && <button type='button' className='bg-blue-600 h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'></button>}
         <p className='text-3xl text-blue-300'>-------------</p>
         {!createWait && <button className='font-[500] text-xl bg-[#0e1d36] px-3  rounded-full border-[3px] border-blue-600'>{`>>>`}</button>}
         {createWait && <button type='button' className='font-[500] text-xl bg-blue-600 text-blue-600 px-3  rounded-full border-[3px] border-blue-600'>{`>>>`}</button>}
         </div>
-        
+
+        {postimg.length > 0 && <div className='mb-2 space-y-5'>
+            {createWait && <div className='mt-3'></div>}
+        {postimg.length > 0 && !loading && postimg.map((img, index) => (
+            <div key={index} className=''>
+                <div className='flex justify-center'>
+                {!createWait && <button type='button' onClick={() => removeMedia(img)} className='text-xl font-[500] bg-[#0e1d36] px-3 py-1 mb-[5px] rounded-full'>Remove</button>}
+                </div>
+            {mediaSwitch(img) && !createWait && <img className='w-[270px] rounded-[30px] border-[4px] border-[#0e1d36]' src={img}/>}        
+            {mediaSwitch2(img) && !createWait && <video className='w-[270px] rounded-[30px] border-[3px] border-[#0e1d36]' src={img} controls />}
+            {createWait && <div className='bg-blue-600 w-[270px] h-[130px] rounded-[30px]'></div>}
+            </div>
+        ))}
+        </div>}
+
         </div>
         </form>}
 
@@ -499,10 +614,17 @@ const Posts = ({profile, user}) => {
                         </div>
 
                         <div className='mb-[px]'>
-                        <FontAwesomeIcon className='cursor-pointer bg-[#0e1d36] rounded-full px-3 w-8 h-8 -10' icon={faEllipsisH}/>
+                        <FontAwesomeIcon onClick={() => handleThree(post.id)} className='cursor-pointer bg-[#0e1d36] rounded-full px-3 w-8 h-8 -10' icon={faEllipsisH}/>
                         </div>
                     </div>
 
+                </div>
+                <div className='flex justify-end'>
+                {threeList.includes(post.id) && <div className='bg-[#113e85] mb-5 mt-[-10px] px-3 py-3 rounded-[20px] mr-5'>
+                    {post.account.acct === user.other_data.acct && !deleteWait && <button onClick={() => deletePost(post.id)} className='text-xl font-[500] bg-[#0e1d36] px-3 pb-[3px] pt-[4px]  rounded-full'>Delete</button>}
+                    {post.account.acct === user.other_data.acct && deleteWait && <button className='text-xl font-[500] bg-blue-600 text-blue-600 px-3 pb-[3px] pt-[4px]  rounded-full'>Delete</button>}
+                    {post.account.acct !== user.other_data.acct && <button className='text-xl font-[500] bg-[#0e1d36] px-3 pb-[3px] pt-[4px]  rounded-full'>Hide</button>}
+                </div>}
                 </div>
                 </div>}
             </div>
