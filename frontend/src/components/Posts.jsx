@@ -1,11 +1,11 @@
 import React, {useEffect, useState, useRef} from 'react'
 import { useDispatch } from 'react-redux';
-import { addPosts, addRefresh, addId } from '../reducers/postsReducer.js';
+import { addPosts, addRefresh, addId, deletePosts, hide } from '../reducers/postsReducer.js';
 import { useSelector } from 'react-redux';
-import { faHeart as solidHeart, faReply, faEllipsisH, faImage } from '@fortawesome/free-solid-svg-icons';
-import { faHeart } from '@fortawesome/free-regular-svg-icons'
+import { faStar as solidHeart, faReply, faEllipsisH, faImage } from '@fortawesome/free-solid-svg-icons';
+import { faStar as faHeart } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
+import { firstData } from './firstData.js';
 const Posts = ({profile, user}) => {
     const [select, setSelect] = useState('Text')
     const [select2, setSelect2] = useState('Explore')
@@ -18,7 +18,7 @@ const Posts = ({profile, user}) => {
     const refresh = useSelector((state) => state.posts.refresh);
     const max_id = useSelector((state) => state.posts.maxId);
     const since_id = useSelector((state) => state.posts.sinceId);
-    const [postSwitcher, setPostSwitcher] = useState([]) 
+    const [postSwitcher, setPostSwitcher] = useState(firstData) 
     const posts = postSwitcher.slice(0, num)
     const [loading2, setLoading2] = useState(false)
     const isFetchingRef = useRef(false)
@@ -32,6 +32,7 @@ const Posts = ({profile, user}) => {
     const [deleteWait, setDeleteWait] = useState(false)
     const [postimg, setPostimg] = useState([])
     const fileInputRef = useRef(null)
+    const [error, setError] = useState(false)
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
 
@@ -78,8 +79,13 @@ const Posts = ({profile, user}) => {
     }
 
         if (!response.ok) {
+            const data = await response.json()
 
+            if (data.error === "Failed to fetch posts" || data.error === "Too many requests") {
+                setError(true)
+            }
         } else {
+            setError(false)
             const data = await response.json()
             const max = data[data.length - 1].id
             const since = allPosts.length > 0 ? allPosts[0].id : null
@@ -107,7 +113,6 @@ const Posts = ({profile, user}) => {
             } catch (error) {
                 console.error(error.message)
               } finally {
-                setLoading(false)
                 setLoading2(false)
                 isFetchingRef.current = false
               }
@@ -261,14 +266,13 @@ const Posts = ({profile, user}) => {
     useEffect(() => {
         const outside = num + 20
          if (!profile && select2 != "Following") {
-            //dispatch(deletePost());
+            dispatch(deletePosts());
             setNum(outside)
-           // dispatch(addRefresh(outside));
+            dispatch(addRefresh(outside));
             if (!isFetchingRef.current) {
                 isFetchingRef.current = true
             get10posts(outside)
             }
-            setPostSwitcher(allPosts)
          } else {
             setNum(outside)
             if (!isFetchingRef.current) {
@@ -280,7 +284,11 @@ const Posts = ({profile, user}) => {
 
         useEffect(() => {
             if (!profile && select2 != "Following") {
-                setPostSwitcher(allPosts)
+                if (allPosts.length > 0) {
+                    setPostSwitcher(allPosts)
+                    } else {
+                        setPostSwitcher(firstData)
+                    }
             }
             if (!profile) {
         if (allPosts.length != 0) {
@@ -354,8 +362,12 @@ const Posts = ({profile, user}) => {
     useEffect(() => {
         if (select2 === "Following" && !profile) {
             setPostSwitcher(followingPosts)
-        } else if (!profile) {
+        } else if (!profile && select2 === "Explore") {
+            if (allPosts.length > 0) {
             setPostSwitcher(allPosts)
+            } else {
+                setPostSwitcher(firstData)
+            }
         }
     }, [followingPosts, select2])
 
@@ -404,6 +416,12 @@ const Posts = ({profile, user}) => {
         } else return 'w-[270px] max-sm:w-[69vw]'
     }
 
+    const css6 = () => {
+        if (posts.length !== 0) {
+            return 'mt-[-5px]'
+        }
+    }
+
     const likePost = (id) => {
         toggleLike(id, false)
 
@@ -412,6 +430,8 @@ const Posts = ({profile, user}) => {
                 post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post
             )
         );
+
+        //dispatch
     }
     
     const unlikePost = (id) => {
@@ -424,15 +444,30 @@ const Posts = ({profile, user}) => {
         );
     }
 
-    const insertSpaceAfterTags = (html, tags = ['a', 'u']) => {
+    const insertSpaceAfterTags = (html, tags = ['a', 'u', 'p', 'n']) => {
         const regex = new RegExp(`</(${tags.join('|')})>`, 'gi');
         return html.replace(regex, '</$1> ');
       };
 
-    const seeMore = posts.filter(post => parser.parseFromString(insertSpaceAfterTags(post.content, ['a', 'u']), "text/html").body.innerText.length >= 100).map(post => post.id)
+    const seeMore = posts.filter(post => parser.parseFromString(insertSpaceAfterTags(post.content), "text/html").body.innerText.length >= 100).map(post => post.id)
 
     const moreText = (text, id) => {
-        const modifiedHTML = insertSpaceAfterTags(text, ['a', 'u'])
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = text;
+    
+        const anchorElements = tempDiv.querySelectorAll('a');
+    
+        anchorElements.forEach(element => {
+            element.style.color = 'silver';
+    
+            if (element.href.startsWith('https://mastodon.social')) {
+                element.href = element.href.replace('https://mastodon.social', 'http://localhost:5173');
+            }
+        });
+    
+        text = tempDiv.innerHTML;
+
+        const modifiedHTML = insertSpaceAfterTags(text)
         if (parser.parseFromString(modifiedHTML, "text/html").body.textContent.length >= 100 && !id) {
             const doc = parser.parseFromString(modifiedHTML, "text/html")
             return doc.body.innerText.replace(/\s+/g, ' ').trim().substring(0, 70) + '...'
@@ -503,10 +538,36 @@ const Posts = ({profile, user}) => {
           }
     }
 
-    if (loading) {
-        return <div className="flex flex-col justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-[30px] border-2'>Loading</h1></div>
-      }
-      console.log(posts)
+    const processHTML = (html) => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+    
+        const anchorElements = tempDiv.querySelectorAll('a');
+    
+        anchorElements.forEach(element => {
+            element.style.color = 'silver';
+    
+            if (element.href.startsWith('https://mastodon.social')) {
+                element.href = element.href.replace('https://mastodon.social', 'http://localhost:5173');
+            }
+        });
+    
+        return tempDiv.innerHTML;
+    };
+
+    const hiding = (id) => {
+        if (!profile) {
+        if (select2 === "Explore") {
+            dispatch(hide(id))
+        } else {
+            setFollowingPosts(followingPosts.filter(post => post.id != id))
+        }
+    } else {
+        setProfilePosts(profilePosts.filter(post => post.id != id))
+    }
+    }   
+
+    
   return (
     <div >
         <div className='flex max-xss:flex-col items-center max-xss:space-y-3 xss:justify-center mb-3 space-x-2'>
@@ -567,7 +628,7 @@ const Posts = ({profile, user}) => {
 
                 <div className='text-2xl mx-3 mt-3 font-[] overflow-wrap  items-end'>
                 {!moreToggle.includes(post.id) && <div dangerouslySetInnerHTML={{ __html: moreText(post.content)}} />}
-                {moreToggle.includes(post.id) && <div dangerouslySetInnerHTML={{ __html: post.content}} />}
+                {moreToggle.includes(post.id) && <div dangerouslySetInnerHTML={{ __html: processHTML(post.content)}} />}
                 {!moreToggle.includes(post.id) && moreText("hello", post.id) && <div onClick={() => moreFunc(post.id)} className='cursor-pointer bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See More</div>}
                 {moreToggle.includes(post.id) && moreText("hello", post.id) && <div onClick={() => moreFunc(post.id)} className='cursor-pointer bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See Less</div>}
                 </div>
@@ -601,14 +662,14 @@ const Posts = ({profile, user}) => {
 
                     <div className='mt-3 mb-1 w-full sm:pl-3 sm:space-x-20 flex items-center max-sm:justify-between max-sm:px-10 justify-center sm:w-[390px]'>
                         <div className='flex mt-[-6px] items-center space-x-[5px]'>
-                    {!post.favourited && <FontAwesomeIcon onClick={() => likePost(post.id)} className='cursor-pointer w-8 h-8' icon={faHeart}/>}
-                    {post.favourited && <FontAwesomeIcon onClick={() => unlikePost(post.id)} className='cursor-pointer w-8 h-8 text-red-500' icon={solidHeart}/>}    
-                        <p className='text-xl font-[500]'>{post.favourites_count}</p>
+                    {!post.favourited && <FontAwesomeIcon onClick={() => likePost(post.id)} className='cursor-pointer w-[35px] h-[35px]' icon={faHeart}/>}
+                    {post.favourited && <FontAwesomeIcon onClick={() => unlikePost(post.id)} className='cursor-pointer w-[35px] h-[35px] text-yellow-400' icon={solidHeart}/>}    
+                        <p className='text-xl font-[500] mb-[-5px]'>{post.favourites_count}</p>
                         </div>
 
                         <div className='ml-[px] mt-[-3px] flex space-x-[5px]'>
                         <FontAwesomeIcon className='cursor-pointer w-8 h-8 -10' icon={faReply}/>
-                        <p className='text-xl font-[500] mt-[1.5px]'>{post.replies_count}</p>
+                        <p className='text-xl font-[500] mt-[3px]'>{post.replies_count}</p>
                         </div>
 
                         <div className='mb-[px]'>
@@ -621,17 +682,20 @@ const Posts = ({profile, user}) => {
                 {threeList.includes(post.id) && <div className='bg-[#113e85] mb-5 mt-[-10px] px-3 py-3 rounded-[20px] mr-5'>
                     {post.account.acct === user.other_data.acct && !deleteWait && <button onClick={() => deletePost(post.id)} className='text-xl font-[500] bg-[#0e1d36] px-3 pb-[3px] pt-[4px]  rounded-full'>Delete</button>}
                     {post.account.acct === user.other_data.acct && deleteWait && <button className='text-xl font-[500] bg-blue-600 text-blue-600 px-3 pb-[3px] pt-[4px]  rounded-full'>Delete</button>}
-                    {post.account.acct !== user.other_data.acct && <button className='text-xl font-[500] bg-[#0e1d36] px-3 pb-[3px] pt-[4px]  rounded-full'>Hide</button>}
+                    {post.account.acct !== user.other_data.acct && <button onClick={() => hiding(post.id)} className='text-xl font-[500] bg-[#0e1d36] px-3 pb-[3px] pt-[4px]  rounded-full'>Hide</button>}
                 </div>}
                 </div>
                 </div>}
             </div>
         ))}
-        {((loading2 && num >= allPosts.length) || select2 === "Explore" && allPosts.length === 0) && <div className='flex justify-center'> 
-            <div className='flex justify-center text-4xl px-4 pt-[6px] py-2 border-2 w-fit rounded-[15px] mt-[-5px] mb-3'>
+        {((loading2 && num >= allPosts.length && select2 === "Explore") || (select2 === "Explore" && allPosts.length === 0) || (select2 === "Following" && followingPosts.length === 0)) && !error && <div className='flex justify-center'> 
+            <div className={`flex justify-center text-4xl px-4 pt-[6px] py-2 border-2 w-fit rounded-[15px] ${css6()} mb-3`}>
             Loading
             </div>
             </div>}
+            {error && <div className={`${css6()} flex justify-center text-2xl mb-2`}>
+                <p className=''>please take a break</p>
+                </div>}
     </div>
   )
 }

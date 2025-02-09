@@ -16,7 +16,7 @@ const postsSlice = createSlice({
         state.posts = [...state.posts, ...action.payload]
       }
     },
-    deletePost: (state) => {
+    deletePosts: (state) => {
       state.posts = state.posts.slice(state.refresh)
     },
     addRefresh: (state, action) => {
@@ -25,12 +25,15 @@ const postsSlice = createSlice({
     addId: (state, action) => {
       state.maxId = action.payload.max
       state.sinceId = action.payload.since
+    },
+    hide: (state, action) => {
+      state.posts = state.posts.filter(post => post.id != action.payload)
     }
   },
 });
 
 // Export generated action creators
-export const { addPosts, deletePost, addRefresh, addId } = postsSlice.actions;
+export const { addPosts, deletePosts, addRefresh, addId, hide } = postsSlice.actions;
 
 // Export the reducer
 export default postsSlice.reducer;

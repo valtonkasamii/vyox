@@ -17,10 +17,10 @@ const Navbar = ({profile}) => {
   return (
     <div className='flex justify-center items-center'>
         <div className='z-10 fixed border-[3px] bg-[#0e1d36] rounded-full px-2 py-2 text-3xl flex justify-center items-center top-3 border-[#1557bf] space-x-3'>
-            <button className='bg-[#1557bf] rounded-full h-12 w-12 flex justify-center items-center'><FontAwesomeIcon className='mb-[2px]' icon={faSearch}/></button>
+            {/*<button className='bg-[#1557bf] rounded-full h-12 w-12 flex justify-center items-center'><FontAwesomeIcon className='mb-[2px]' icon={faSearch}/></button>*/}
             <a href='/'><button className='bg-[#1557bf] rounded-full h-12 w-12 flex justify-center items-center'><FontAwesomeIcon className='mb-[2px]' icon={faHome}/></button></a>
-            <button className='bg-[#1557bf] rounded-full h-12 w-12 flex justify-center items-center'><FontAwesomeIcon className='mb-[]' icon={faBell}/></button>
-            <button className='bg-[#1557bf] rounded-full h-12 w-12 flex justify-center items-center'><FontAwesomeIcon className='w-[29px] mt-1' icon={faMessage}/></button>
+            {/*<button className='bg-[#1557bf] rounded-full h-12 w-12 flex justify-center items-center'><FontAwesomeIcon className='mb-[]' icon={faBell}/></button>*/}
+            {/*<button className='bg-[#1557bf] rounded-full h-12 w-12 flex justify-center items-center'><FontAwesomeIcon className='w-[29px] mt-1' icon={faMessage}/></button>*/}
             <button onClick={() => setMenu(true)} className='bg-[#1557bf] rounded-full h-12 w-12 flex justify-center items-center'><FontAwesomeIcon icon={faUser}/></button>
         </div>
         
