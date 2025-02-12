@@ -28,12 +28,22 @@ const postsSlice = createSlice({
     },
     hide: (state, action) => {
       state.posts = state.posts.filter(post => post.id != action.payload)
-    }
+    },
+    addLike: (state, action) => {
+      state.posts = state.posts.map((post) => 
+          post.id === action.payload ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post
+      );
+  },
+  addUnlike: (state, action) => {
+    state.posts = state.posts.map((post) => 
+        post.id === action.payload ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post
+    );
+}
   },
 });
 
 // Export generated action creators
-export const { addPosts, deletePosts, addRefresh, addId, hide } = postsSlice.actions;
+export const { addPosts, deletePosts, addRefresh, addId, hide, addLike, addUnlike } = postsSlice.actions;
 
 // Export the reducer
 export default postsSlice.reducer;

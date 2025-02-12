@@ -1,15 +1,15 @@
 import React, {useEffect, useState, useRef} from 'react'
 import { useDispatch } from 'react-redux';
-import { addPosts, addRefresh, addId, deletePosts, hide } from '../reducers/postsReducer.js';
+import { addPosts, addRefresh, addId, deletePosts, hide, addLike, addUnlike } from '../reducers/postsReducer.js';
 import { useSelector } from 'react-redux';
 import { faStar as solidHeart, faReply, faEllipsisH, faImage } from '@fortawesome/free-solid-svg-icons';
 import { faStar as faHeart } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { firstData } from './firstData.js';
-const Posts = ({profile, user}) => {
+
+const Posts = ({profile, user, starr}) => {
     const [select, setSelect] = useState('Text')
     const [select2, setSelect2] = useState('Explore')
-    const [loading, setLoading] = useState(true)
     const [num, setNum] = useState(0)
     const dispatch = useDispatch();
     const allPosts = useSelector((state) => state.posts.posts);
@@ -33,11 +33,10 @@ const Posts = ({profile, user}) => {
     const [postimg, setPostimg] = useState([])
     const fileInputRef = useRef(null)
     const [error, setError] = useState(false)
-
+    const accessToken = user.access_token
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
-
+   
     const get10posts = async (currentNum) => {
-        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
       if (((refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) || profile || select2 === "Following")) {
         try {  
@@ -52,7 +51,7 @@ const Posts = ({profile, user}) => {
                 },
                 body: JSON.stringify({max_id, since_id})            
             })
-        } else if (profile) {
+        } else if (profile && !starr) {
             let url
             if (localMax) {
                 url = `${mastodonServer}/api/v1/accounts/${profile.id}/statuses?limit=40&max_id=${localMax}`                
@@ -64,6 +63,19 @@ const Posts = ({profile, user}) => {
                         'Authorization': `Bearer ${accessToken}`,
                     }
             })
+        } else if (profile && starr) {
+            let url
+            if (localMax) {
+                url = `${mastodonServer}/api/v1/favourites?limit=40&max_id=${localMax}`                
+            } else {
+                url = `${mastodonServer}/api/v1/favourites?limit=40`                
+            }
+
+            response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                }
+        })
         } else if (((!profile && select2 === "Following"))) {
             let url
             if (localMax && followingPosts.length != 0) {
@@ -80,7 +92,7 @@ const Posts = ({profile, user}) => {
 
         if (!response.ok) {
             const data = await response.json()
-
+            console.log(data)
             if (data.error === "Failed to fetch posts" || data.error === "Too many requests") {
                 setError(true)
             }
@@ -118,13 +130,11 @@ const Posts = ({profile, user}) => {
               }
         } else {
             isFetchingRef.current = false
-            setLoading(false)
         }
         
     } 
 
     const toggleLike = async (postId, isLiked) => {
-        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
     
         try {
@@ -162,7 +172,6 @@ const Posts = ({profile, user}) => {
         e.preventDefault()
         if (createWait === false) {
         setCreateWait(true)
-        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         try {
             const mediaIds = []
@@ -224,7 +233,6 @@ const Posts = ({profile, user}) => {
 
     const deletePost = async (id) => {
         setDeleteWait(true)
-        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         try {
             const response = await fetch(`${mastodonServer}/api/v1/statuses/${id}`, {
@@ -266,12 +274,12 @@ const Posts = ({profile, user}) => {
     useEffect(() => {
         const outside = num + 20
          if (!profile && select2 != "Following") {
-            dispatch(deletePosts());
+            //dispatch(deletePosts());
             setNum(outside)
-            dispatch(addRefresh(outside));
+            //dispatch(addRefresh(outside));
             if (!isFetchingRef.current) {
                 isFetchingRef.current = true
-            get10posts(outside)
+            //get10posts(outside)
             }
          } else {
             setNum(outside)
@@ -290,22 +298,12 @@ const Posts = ({profile, user}) => {
                         setPostSwitcher(firstData)
                     }
             }
-            if (!profile) {
-        if (allPosts.length != 0) {
-            setLoading(false)
-        } else setLoading(true)
-    }
     }, [allPosts])
 
     useEffect(() => {
     if (profile) {
         setPostSwitcher(profilePosts)
-
-        if (profilePosts.length != 0) {
-        setLoading(false)
-        } else setLoading(true)
-
-    }
+        }
     }, [profilePosts])
 
     useEffect(() => {
@@ -327,7 +325,7 @@ const Posts = ({profile, user}) => {
             if (!isFetchingRef.current) {
                 isFetchingRef.current = true
                 if(!profile) {
-                    get10posts(outside)
+                    //get10posts(outside)
                 } else if (profile && profilePosts.length % 40 === 0) {
                     get10posts(outside)
                 }
@@ -345,14 +343,13 @@ const Posts = ({profile, user}) => {
 
       useEffect(() => {
         setNum(20)
-        if (!isFetchingRef.current) {
+        if (!isFetchingRef.current && select2 === "Explore") {
             isFetchingRef.current = true
             get10posts(20)
         }
         if (select2 === "Following") {
-            get10posts(20, false)
+            get10posts(20)
             isFetchingRef.current = true
-            setLoading(true)
         } else {
             setLocalMax(null)
             setFollowingPosts([])
@@ -385,6 +382,18 @@ const Posts = ({profile, user}) => {
             return post.media_attachments.length > 0
         } else return post.media_attachments.length === 0
     }
+
+    const swap2 = () => {
+        if (select === 'Media') {
+            if (posts.filter(post => post.media_attachments.length > 0).length > 0) {
+                return true
+            } else return false
+        } else {
+        if (posts.filter(post => post.media_attachments.length === 0).length > 0) {
+            return true
+        } else return false
+    }
+}
 
     const css = (array) => {
         if (array.length === 1) {
@@ -419,29 +428,31 @@ const Posts = ({profile, user}) => {
     const css6 = () => {
         if (posts.length !== 0) {
             return 'mt-[-5px]'
-        }
+        } else return 'mt-1'
     }
 
     const likePost = (id) => {
         toggleLike(id, false)
 
-        setPostSwitcher((prevPosts) => 
-            prevPosts.map((post) => 
-                post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post
-            )
-        );
-
-        //dispatch
+        if (!profile && select2 === "Explore") {
+            dispatch(addLike(id))
+        } else if (!profile && select2 === "Following") {
+            setFollowingPosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post ) );
+        } else if (profile) {
+            setProfilePosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post ) );
+        }
     }
     
     const unlikePost = (id) => {
         toggleLike(id, true)
 
-        setPostSwitcher((prevPosts) => 
-            prevPosts.map((post) => 
-                post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post
-            )
-        );
+        if (!profile && select2 === "Explore") {
+            dispatch(addUnlike(id))
+        } else if (!profile && select2 === "Following") {
+            setFollowingPosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post ) );
+        } else if (profile) {
+            setProfilePosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post ) );
+        }
     }
 
     const insertSpaceAfterTags = (html, tags = ['a', 'u', 'p', 'n']) => {
@@ -458,7 +469,7 @@ const Posts = ({profile, user}) => {
         const anchorElements = tempDiv.querySelectorAll('a');
     
         anchorElements.forEach(element => {
-            element.style.color = 'silver';
+            element.style.color = 'yellow';
     
             if (element.href.startsWith('https://mastodon.social')) {
                 element.href = element.href.replace('https://mastodon.social', 'http://localhost:5173');
@@ -508,7 +519,19 @@ const Posts = ({profile, user}) => {
 
       const handleFileChange = (e) => {
         const file = e.target.files[0]
-        
+
+        if (postimg.length > 0 && postimg[0].startsWith('data:video/')) {
+            alert("You can only upload one video at a time.");
+            e.target.value = ""; 
+            return
+            } else {
+                if (postimg.length >= 4) {
+                    alert("You can only upload 4 images at a time.");
+                    e.target.value = ""; 
+                    return
+                }
+            } 
+
         if (file) {
             const reader = new FileReader()
             reader.onloadend = () => {
@@ -516,6 +539,16 @@ const Posts = ({profile, user}) => {
             }
             reader.readAsDataURL(file)
         }
+    }
+
+    const mediaInputs = () => {
+        if (postimg.length > 0) {
+            if (postimg[0].startsWith('data:image/')) {
+                return "image/*"
+            } else if (postimg[0].startsWith('data:video/')) {
+                return "video/*"
+            }
+        } else return "video/*, image/*"
     }
     
     const mediaSwitch = (img) => {
@@ -590,7 +623,7 @@ const Posts = ({profile, user}) => {
             </div>
         {!createWait && <input required value={caption} onChange={(e) => setCaption(e.target.value)} type='text' className='bg-[#0e1d36] border- w-[270px] max-sxx:w-full h-12 text-xl px-3 rounded-full' placeholder='Type your caption here...'/>}
         {createWait && <div className='bg-blue-600 border- w-[270px] max-sxx:w-full h-12 text-xl px-3 rounded-full'></div>}
-        <input ref={fileInputRef} onChange={handleFileChange} className='hidden' accept="image/*,video/*" type='file'/>
+        <input ref={fileInputRef} onChange={handleFileChange} className='hidden' accept={mediaInputs()} type='file'/>
         <div className='mt-2 flex justify-between w-full items-center'>
         {!createWait && <button onClick={handleImageClick} type='button' className='bg-[#0e1d36] h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'><FontAwesomeIcon className='text-xl mt-[0.5px]' icon={faImage}/></button>}
         {createWait && <button type='button' className='bg-blue-600 h-10 w-10 rounded-full flex items-center justify-center border-blue-600 border-[3px]'></button>}
@@ -601,7 +634,7 @@ const Posts = ({profile, user}) => {
 
         {postimg.length > 0 && <div className='mb-2 space-y-5'>
             {createWait && <div className='mt-3'></div>}
-        {postimg.length > 0 && !loading && postimg.map((img, index) => (
+        {postimg.length > 0 && postimg.map((img, index) => (
             <div key={index} className=''>
                 <div className='flex justify-center'>
                 {!createWait && <button type='button' onClick={() => removeMedia(img)} className='text-xl font-[500] bg-[#0e1d36] px-3 py-1 mb-[5px] rounded-full'>Remove</button>}
@@ -688,7 +721,8 @@ const Posts = ({profile, user}) => {
                 </div>}
             </div>
         ))}
-        {((loading2 && num >= allPosts.length && select2 === "Explore") || (select2 === "Explore" && allPosts.length === 0) || (select2 === "Following" && followingPosts.length === 0)) && !error && <div className='flex justify-center'> 
+        {!swap2() && <div className='mb-2'></div>}
+        {((loading2 && num >= allPosts.length && select2 === "Explore") || (select2 === "Explore" && allPosts.length === 0) || (select2 === "Following" && followingPosts.length === 0) || (profile && profilePosts.length === 0)) && !error && <div className='flex justify-center'> 
             <div className={`flex justify-center text-4xl px-4 pt-[6px] py-2 border-2 w-fit rounded-[15px] ${css6()} mb-3`}>
             Loading
             </div>

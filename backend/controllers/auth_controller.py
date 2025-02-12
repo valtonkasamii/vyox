@@ -55,7 +55,8 @@ def getme():
             "followers_count": user_data.get("followers_count"),
             "following_count": user_data.get("following_count"),
             "statuses_count": user_data.get("statuses_count"),
-            "other_data": user_data
+            "other_data": user_data,
+            "access_token": access_token
         }), 200
     else:
         return jsonify({"error": "Failed to retrieve user data", "details": response.json()}), response.status_code   
