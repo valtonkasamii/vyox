@@ -7,6 +7,7 @@ import Navbar from './components/Navbar.jsx'
 import Auth from './pages/Auth.jsx'
 import Home from './pages/Home.jsx'
 import Profile from './pages/Profile.jsx'
+import Post from './pages/Post.jsx'
 
 function App() {
   const [auth, setAuth] = useState(null)
@@ -46,6 +47,7 @@ function App() {
         <Route path='/login' element={!auth ? <Auth /> : <Navigate to='/'/>}/>
         <Route path='*' element={!auth ? <Navigate to='/login'/> : <Navigate to='/'/>}/>
         <Route path='/:username' element={auth ? <Profile user={auth}/> : <Navigate to="/login"/>} />
+        <Route path='/post/:id' element={auth ? <Post user={auth}/> : <Navigate to='/login'/>}/>
         </Routes>
     </>
   )

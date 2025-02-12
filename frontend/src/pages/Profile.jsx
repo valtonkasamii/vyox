@@ -108,7 +108,7 @@ const Profile = ({user}) => {
 
         {profile && <div className='flex justify-center mb-3'>
             <h1 className='text-2xl flex break-all px-3 bg-gray-800 border-blue-600 border-[3px] font-[500] pb-[4.5px] pt-[2px] rounded-full'>@{profile.username}</h1>
-            <button className='ml-2 text-2xl px-3 bg-blue-800 font-[600] border-blue-400 border-[3px] pb-[3px] rounded-full '><p className=''>vyox</p></button>
+            <button className='ml-2 text-2xl px-2 bg-blue-800 font-[600] border-blue-400 border-[3px] pb-[3px] rounded-full '><p className='pb-[0.5px]'>vyox</p></button>
             </div>}
 
         {profile && <div className='space-x-4 mx-3 flex items-center justify-center'> <div className='flex flex-col justify-center items-center space-y-3'>
