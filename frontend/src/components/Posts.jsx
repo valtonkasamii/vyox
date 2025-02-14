@@ -34,10 +34,11 @@ const Posts = ({profile, user, starr, single}) => {
     const fileInputRef = useRef(null)
     const [error, setError] = useState(false)
     const accessToken = user.access_token
-    const [replies, setReplies] = useState([])
+    const [replies1, setReplies1] = useState([])
+    const replies = replies1.slice(0, num)
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
-   console.log(posts)
+
     const get10posts = async (currentNum) => {
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
       if (((refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) || profile || select2 === "Following" || single)) {
@@ -93,7 +94,6 @@ const Posts = ({profile, user, starr, single}) => {
         })
     } else if (single) {
         const idPost = window.location.href.split("/").pop()
-        console.log(idPost)
         response = await fetch(`${mastodonServer}/api/v1/statuses/${idPost}`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -108,8 +108,7 @@ const Posts = ({profile, user, starr, single}) => {
         if (single) {
         if (response2.ok) {
             const data = await response2.json()
-            console.log(data)
-            setReplies(data.descendants)
+            setReplies1(data.descendants)
         }
     }
         if (!response.ok) {
@@ -297,7 +296,7 @@ const Posts = ({profile, user, starr, single}) => {
     
     useEffect(() => {
         const outside = num + 20
-         if (!profile && select2 != "Following") {
+         if (!profile && select2 != "Following" && !single) {
             dispatch(deletePosts());
             setNum(outside)
             dispatch(addRefresh(outside));
@@ -340,6 +339,7 @@ const Posts = ({profile, user, starr, single}) => {
           const pageHeight = document.documentElement.scrollHeight;
           if (scrollPosition >= pageHeight - 1) {
             const outside = num + 20
+            if (!single) {
             if ((postSwitcher === allPosts && allPosts.length >= (num - 20)) || (postSwitcher === profilePosts && profilePosts.length >= (num - 20)) || (postSwitcher === followingPosts && followingPosts.length >= (num - 20))) {
                 if (!profile) {
                     setNum(outside)
@@ -347,6 +347,11 @@ const Posts = ({profile, user, starr, single}) => {
                     setNum(outside)
                 }
             }
+        } else {
+            if ((num - 20) <= posts.length) {
+                setNum(outside)
+            }
+        }
             if (!profile && select2 != "Following"){
                 dispatch(addRefresh(outside))
             }
@@ -464,11 +469,11 @@ const Posts = ({profile, user, starr, single}) => {
     const likePost = (id) => {
         toggleLike(id, false)
 
-        if (!profile && select2 === "Explore") {
+        if (!profile && select2 === "Explore" && !single) {
             dispatch(addLike(id))
-        } else if (!profile && select2 === "Following") {
+        } else if (!profile && select2 === "Following" & !single) {
             setFollowingPosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post ) );
-        } else if (profile) {
+        } else if (profile || single) {
             setProfilePosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post ) );
         }
     }
@@ -476,11 +481,11 @@ const Posts = ({profile, user, starr, single}) => {
     const unlikePost = (id) => {
         toggleLike(id, true)
 
-        if (!profile && select2 === "Explore") {
+        if (!profile && select2 === "Explore" && !single) {
             dispatch(addUnlike(id))
-        } else if (!profile && select2 === "Following") {
+        } else if (!profile && select2 === "Following" && !single) {
             setFollowingPosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post ) );
-        } else if (profile) {
+        } else if (profile || single) {
             setProfilePosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post ) );
         }
     }
@@ -491,8 +496,9 @@ const Posts = ({profile, user, starr, single}) => {
       };
 
     const seeMore = posts.filter(post => parser.parseFromString(insertSpaceAfterTags(post.content), "text/html").body.innerText.length >= 100).map(post => post.id)
-
-    const moreText = (text, id) => {
+    const seeMore2 = replies.filter(reply => parser.parseFromString(insertSpaceAfterTags(reply.content), "text/html").body.innerText.length >= 100).map(reply => reply.id)
+      
+    const moreText = (text, id, id2) => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = text;
     
@@ -512,10 +518,12 @@ const Posts = ({profile, user, starr, single}) => {
         if (parser.parseFromString(modifiedHTML, "text/html").body.textContent.length >= 100 && !id) {
             const doc = parser.parseFromString(modifiedHTML, "text/html")
             return doc.body.innerText.replace(/\s+/g, ' ').trim().substring(0, 70) + '...'
-        } else if (text && !id) {
+        } else if (text && !id && !id2) {
             return text
         } else if (id) {
             return seeMore.includes(id)
+        } else if (id2) {
+            return seeMore2.includes(id2)
         }
     }
 
@@ -635,7 +643,6 @@ const Posts = ({profile, user, starr, single}) => {
             window.location.href = `http://localhost:5173/post/${id}`;
         }
     };
-    
   return (
     <div >
         {!single && <div className='flex max-xss:flex-col items-center max-xss:space-y-3 xss:justify-center mb-3 space-x-2'>
@@ -755,28 +762,38 @@ const Posts = ({profile, user, starr, single}) => {
                 </div>}
             </div>
         ))}
-        {replies.length > 0 && single && <div className='flex justify-center'><div className=' py-3 bg-[#113e85] mb-3 sm:w-[400px] max-sm:w-[95vw]  rounded-[20px]'>
-           <div className='flex items-center justify-between px-3 mb-3'>
+        {replies.length > 0 && single && <div className='flex flex-col items-center'>
+            <div className='mb-3 mt-[-8px] bg-[#0e1d36] text-2xl sm:w-[400px] border-2 border-blue-300 max-sm:w-[95vw]  rounded-[20px] flex justify-between'>
+                <input type='text' placeholder='Type your comment' className='placeholder:text-gray-200 w-full bg-blue-900 px-3 h-[50px] rounded-[20px]'/>
+                <button className=' font-[500] px-3'>{`>>>`}</button>
+            </div>
+
+            <div className=' py-3 bg-[#113e85] mb-3 sm:w-[400px] max-sm:w-[95vw]  rounded-[20px]'>           
+           <div className='flex items-center justify-between px-3 mb-2'>
             <h1 className='text-3xl font-[500] text-gray-200'>Comments</h1>
-            <h1 className='text-3xl font-[500] ml-3 mt-[-9px]'>{replies.length}</h1>
+            <h1 className='text-3xl font-[500] ml-3 mt-[-3px]'>{replies1.length}</h1>
            </div>
+           <div className='border-b-[2px] mb-3 border-blue-300'></div>
            <div className='space-y-3'>
             {replies.map((reply, index) => (
-                <div key={index} className={`${reply.id !== replies[replies.length -1].id ? 'border-b-[3px] pb-3' : ''} border-blue-500`}>
+                <div key={index} className={`${reply.id !== replies[replies.length -1].id ? 'border-b-[3px] pb-3' : ''} border-blue-300`}>
                     <div className='px-3'>
 
                     <div className='flex items-center mb-2'>
                         <img className='w-[68px] rounded-full' src={reply.account.avatar}/>
                         <p className='ml-2 font-[500] text-2xl break-all'>@{reply.account.username}</p>
                     </div>
-                    <div className='text-2xl' dangerouslySetInnerHTML={{ __html: moreText(reply.content)}} />
+                    {!moreToggle.includes(reply.id) && <div className='text-2xl' dangerouslySetInnerHTML={{ __html: moreText(reply.content)}} />}
+                    {moreToggle.includes(reply.id) && <div className='text-2xl' dangerouslySetInnerHTML={{ __html: processHTML(reply.content)}} />}
+                {!moreToggle.includes(reply.id) && moreText("hello", null, reply.id) && <div onClick={(e) => (moreFunc(reply.id), e.stopPropagation())} className='cursor-pointer text-2xl bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See More</div>}
+                {moreToggle.includes(reply.id) && moreText("hello", null, reply.id) && <div onClick={(e) => (moreFunc(reply.id), e.stopPropagation())} className='cursor-pointer text-2xl bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See Less</div>}
                 </div>
                 </div>
             ))}
             </div>
             </div></div>}
         {!swap2() && <div className='mb-2'></div>}
-        {((loading2 && num >= allPosts.length && select2 === "Explore") || (select2 === "Explore" && allPosts.length === 0) || (select2 === "Following" && followingPosts.length === 0) || (profile && profilePosts.length === 0) || (single && profilePosts.length === 0)) && !error && <div className='flex justify-center'> 
+        {((loading2 && num >= allPosts.length && select2 === "Explore") || (select2 === "Explore" && allPosts.length === 0) || (select2 === "Following" && followingPosts.length === 0) || (profile && profilePosts.length === 0) || (single && profilePosts.length === 0)) && !error && (!single || single && profilePosts.length === 0) && <div className='flex justify-center'> 
             <div className={`flex justify-center text-4xl px-4 pt-[6px] py-2 border-2 w-fit rounded-[15px] ${css6()} mb-3`}>
             Loading
             </div>
