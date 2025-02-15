@@ -36,6 +36,8 @@ const Posts = ({profile, user, starr, single}) => {
     const accessToken = user.access_token
     const [replies1, setReplies1] = useState([])
     const replies = replies1.slice(0, num)
+    const [comment, setComment] = useState('')
+    const [replyWait, setReplyWait] = useState(false)
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
 
@@ -281,6 +283,43 @@ const Posts = ({profile, user, starr, single}) => {
             setDeleteWait(false)
         }
     }
+
+    const sendReply = async (e) => {
+        e.preventDefault()
+        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
+        if (!replyWait) {
+            setReplyWait(true)
+        try {
+          const apiUrl = `${mastodonServer}/api/v1/statuses`;
+    
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+              status: comment,
+              in_reply_to_id: profilePosts[0].id
+            })
+          });
+    
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          } else {
+            setComment('')
+            const data = await response.json();
+            console.log(data)
+            setReplies1([...replies1, data])
+          }
+    
+        } catch (error) {
+          console.error('Error sending reply:', error);
+        } finally {
+            setReplyWait(false)
+        }
+     }
+      };
 
     const selectWidth = (select) => {
         if (select === 'Text') {
@@ -762,15 +801,16 @@ const Posts = ({profile, user, starr, single}) => {
                 </div>}
             </div>
         ))}
-        {replies.length > 0 && single && <div className='flex flex-col items-center'>
-            <div className='mb-3 mt-[-8px] bg-[#0e1d36] text-2xl sm:w-[400px] border-2 border-blue-300 max-sm:w-[95vw]  rounded-[20px] flex justify-between'>
-                <input type='text' placeholder='Type your comment' className='placeholder:text-gray-200 w-full bg-blue-900 px-3 h-[50px] rounded-[20px]'/>
-                <button className=' font-[500] px-3'>{`>>>`}</button>
-            </div>
+        {single && <div className='flex flex-col items-center'>
+            <form onSubmit={sendReply} className='mb-3 mt-[-8px] bg-[#0e1d36] text-2xl sm:w-[400px] border-2 border-blue-300 max-sm:w-[95vw]  rounded-[20px] flex justify-between'>
+                <input value={comment} onChange={(e) => setComment(e.target.value)} type='text' placeholder='Type your reply...' className='placeholder:text-gray-200 w-full bg-blue-900 px-3 h-[50px] rounded-l-[20px]'/>
+                {!replyWait && <button className='rounded-r-[20px] font-[500] px-3'>{`>>>`}</button>}
+                {replyWait && <button type='button' className='rounded-r-[20px] text-blue-600 bg-blue-600 font-[500] px-3'>{`>>>`}</button>}
+            </form>
 
             <div className=' py-3 bg-[#113e85] mb-3 sm:w-[400px] max-sm:w-[95vw]  rounded-[20px]'>           
            <div className='flex items-center justify-between px-3 mb-2'>
-            <h1 className='text-3xl font-[500] text-gray-200'>Comments</h1>
+            <h1 className='text-3xl font-[500] text-gray-200'>Replies</h1>
             <h1 className='text-3xl font-[500] ml-3 mt-[-3px]'>{replies1.length}</h1>
            </div>
            <div className='border-b-[2px] mb-3 border-blue-300'></div>
