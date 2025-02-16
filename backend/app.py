@@ -1,4 +1,4 @@
-from flask import Flask, session
+from flask import Flask, Session
 from dotenv import load_dotenv 
 from flask_cors import CORS
 import os
@@ -9,6 +9,7 @@ import redis
 load_dotenv()
 
 app = Flask(__name__)
+
 CORS(
     app,
     resources={r"/*": {
@@ -18,8 +19,22 @@ CORS(
         "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"]
     }},
 )
+
+@app.after_request
+def add_cors_headers(response):
+    # Allow your frontend origin
+    response.headers['Access-Control-Allow-Origin'] = 'https://vyox-frontend.onrender.com'
+    # Allow credentials (cookies)
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    # Allow specific headers
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    # Allow specific methods
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH'
+    return response
+
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 
+Session(app)
 app.config['SESSION_TYPE'] = 'redis'  # Use Redis for session storage
 app.config['SESSION_REDIS'] = redis.Redis(
     host=os.getenv('REDIS_HOST'),  # Replace with your Upstash Redis host
