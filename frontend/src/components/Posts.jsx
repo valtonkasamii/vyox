@@ -41,6 +41,7 @@ const Posts = ({profile, user, starr, single}) => {
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
     console.log(posts)
+    
     const get10posts = async (currentNum) => {
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
       if (((refresh >= allPosts.length || allPosts.length <= 200 || (allPosts.length - 200) <= currentNum || (allPosts.length - 200) <= refresh) || profile || select2 === "Following" || single)) {
@@ -49,7 +50,7 @@ const Posts = ({profile, user, starr, single}) => {
             let response
             let response2
             if (!profile && select2 === "Explore" && !single) {
-         response = await fetch('http://127.0.0.1:5000/posts', {
+         response = await fetch('https://vyox-backend.onrender.com/posts', {
                 credentials: 'include',
                 method: 'POST',
                 headers: {

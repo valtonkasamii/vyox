@@ -8,7 +8,7 @@ from routes.posts_route import post_routes
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "https://vyox-frontend.onrender.com"}}, supports_credentials=True)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 
 app.config['SESSION_TYPE'] = 'filesystem'
