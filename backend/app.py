@@ -35,13 +35,7 @@ def add_cors_headers(response):
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 
 Session(app)
-app.config['SESSION_TYPE'] = 'redis'  # Use Redis for session storage
-app.config['SESSION_REDIS'] = redis.Redis(
-    host=os.getenv('REDIS_HOST'),  # Replace with your Upstash Redis host
-    port=os.getenv('PORT'),  # Replace with your Upstash Redis port
-    password=os.getenv('REDIS_PASS'),  # Replace with your Upstash Redis password
-    ssl=True  # Enable SSL for secure connection
-)
+app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
