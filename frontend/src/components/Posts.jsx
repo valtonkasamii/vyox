@@ -40,10 +40,10 @@ const Posts = ({profile, user, starr, single}) => {
     const [replyWait, setReplyWait] = useState(false)
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
-
+    console.log(posts)
     const get10posts = async (currentNum) => {
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
-      if (((refresh >= allPosts.length || allPosts.length <= 60 || (allPosts.length - 60) <= currentNum || (allPosts.length - 60) <= refresh) || profile || select2 === "Following" || single)) {
+      if (((refresh >= allPosts.length || allPosts.length <= 200 || (allPosts.length - 200) <= currentNum || (allPosts.length - 200) <= refresh) || profile || select2 === "Following" || single)) {
         try {  
             setLoading2(true)
             let response
@@ -122,25 +122,31 @@ const Posts = ({profile, user, starr, single}) => {
         } else {
             setError(false)
             const data = await response.json()
-            const max = Array.isArray(data) && data.length > 0 ? data[data.length - 1].id : null           
             const since = allPosts.length > 0 ? allPosts[0].id : null
             if (!profile && select2 === "Explore" && !single) {
-            dispatch(addPosts(data))
+            const max = data[data.length - 1].id
+            const filteredData = data.filter(post => post.in_reply_to_id === null)
+            const filteredVideos = filteredData.filter(post => (post.media_attachments.length > 0 ? post.media_attachments[0].type !== "video" : true))
+            dispatch(addPosts(filteredVideos))
             dispatch(addId({max, since}))
             } else if (profile && !single) {
+                const max = data[data.length - 1].id
+                const filteredData = data.filter(post => post.in_reply_to_id === null)
                 setLocalMax(max)
                 if (profilePosts.length > 0) {
-                    setProfilePosts([...profilePosts, ...data])
+                    setProfilePosts([...profilePosts, ...filteredData])
                 } else {
-                    setProfilePosts(data)
+                    setProfilePosts(filteredData)
                 }
             } else if (((!profile && select2 === "Following" && !single))) {
+                const max = data[data.length - 1].id
+                const filteredData = data.filter(post => post.in_reply_to_id === null)
                 setLocalMax(max)
                 if (followingPosts.length > 0) {
-                    setFollowingPosts([...followingPosts, ...data])
+                    setFollowingPosts([...followingPosts, ...filteredData])
                 } else {
                         setNum(20)
-                        setFollowingPosts(data)
+                        setFollowingPosts(filteredData)
                         console.log(data)
                 }
             } else if (single) {
