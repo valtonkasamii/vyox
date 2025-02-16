@@ -41,7 +41,7 @@ const Posts = ({profile, user, starr, single}) => {
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
     console.log(posts)
-    
+
     const get10posts = async (currentNum) => {
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
       if (((refresh >= allPosts.length || allPosts.length <= 200 || (allPosts.length - 200) <= currentNum || (allPosts.length - 200) <= refresh) || profile || select2 === "Following" || single)) {
@@ -692,11 +692,11 @@ const Posts = ({profile, user, starr, single}) => {
   return (
     <div >
         {!single && <div className='flex max-xss:flex-col items-center max-xss:space-y-3 xss:justify-center mb-3 space-x-2'>
-        <select value={select} onChange={(e) => setSelect(e.target.value)} className={`${selectWidth(select)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
+        <select value={select} onChange={(e) => setSelect(e.target.value)} className={`hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
             <option value="Media">Media</option>
             <option value="Text">Text</option>
         </select>
-        {!profile && <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`${select2Width(select2)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
+        {!profile && <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
             <option value="Explore">Explore</option>
             <option value="Following">Following</option>
         </select>}
