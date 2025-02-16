@@ -34,13 +34,18 @@ def add_cors_headers(response):
     return response
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
-
-Session(app)
-app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_REDIS'] = redis.Redis(
+    host=os.getenv('REDIS_HOST'),
+    port=int(os.getenv('REDIS_PORT')),
+    password=os.getenv('REDIS_PASS'),
+    ssl=True
+)
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
+Session(app)
 
 app.register_blueprint(auth_routes)
 app.register_blueprint(post_routes)
