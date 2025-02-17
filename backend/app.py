@@ -16,14 +16,21 @@ CORS(
     app,
     resources={
         r"/api/*": {
-            "origins": "https://vyox-frontend.onrender.com"
+            "origins": "https://vyox-frontend.onrender.com",
+            "allow_headers": ["Accept", "Content-Type", "Origin", "Authorization"],
+            "expose_headers": ["Accept", "Content-Type", "Origin", "Authorization"]
         }
     },
-    supports_credentials=True, 
-    allow_headers=["Accept", "Content-Type", "Origin", "Authorization"],
-    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    expose_headers=["Accept", "Content-Type", "Origin", "Authorization"],
+    supports_credentials=True
 )
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "https://vyox-frontend.onrender.com"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, Origin, Authorization"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 app.config.update({
