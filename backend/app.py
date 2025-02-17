@@ -15,7 +15,7 @@ app = Flask(__name__)
 CORS(
     app,
     resources={
-        r"/.*": {  # Use '/.*' to match all routes
+        r"/api/*": {  # Use '/.*' to match all routes
             "origins": "https://vyox-frontend.onrender.com",
             "supports_credentials": True,
             "allow_headers": ["Content-Type", "Authorization"],
