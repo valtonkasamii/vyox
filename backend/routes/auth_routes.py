@@ -4,7 +4,7 @@ from middleware.protect_route import authenticate_request
 
 auth_routes = Blueprint('auth', __name__)
 
-auth_routes.route('/login', methods=['GET'])(login)
-auth_routes.route('/callback', methods=['GET'])(callback)
-auth_routes.route('/me', methods=['GET'])(authenticate_request(getme))
-auth_routes.route('/logout', methods=['POST'])(authenticate_request(logout))
+auth_routes.route('/api/login', methods=['GET'])(login)
+auth_routes.route('/api/callback', methods=['GET'])(callback)
+auth_routes.route('/api/me', methods=['GET'])(authenticate_request(getme))
+auth_routes.route('/api/logout', methods=['POST'])(authenticate_request(logout))

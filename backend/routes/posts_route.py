@@ -4,4 +4,4 @@ from middleware.protect_route import authenticate_request
 
 post_routes = Blueprint('posts', __name__)
 
-post_routes.route('/posts', methods=['POST'])(authenticate_request(getAllPosts))
+post_routes.route('/api/posts', methods=['POST'])(authenticate_request(getAllPosts))
