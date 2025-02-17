@@ -16,7 +16,7 @@ CORS(
     app,
     resources={
         r"/api/*": {
-            "origins": "https://vyox.onrender.app",
+            "origins": "https://vyox.onrender.com",
             "allow_headers": ["Accept", "Content-Type", "Origin", "Authorization"],
             "expose_headers": ["Accept", "Content-Type", "Origin", "Authorization"]
         }
