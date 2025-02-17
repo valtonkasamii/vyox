@@ -20,9 +20,9 @@ CORS(
         }
     },
     supports_credentials=True, 
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Accept", "Content-Type", "Origin", "Authorization"],
     methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    expose_headers=["Content-Type", "Authorization"]
+    expose_headers=["Accept", "Content-Type", "Origin", "Authorization"],
 )
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
