@@ -15,14 +15,14 @@ app = Flask(__name__)
 CORS(
     app,
     resources={
-        r"/api/*": {  # Use '/.*' to match all routes
-            "origins": "https://vyox-frontend.onrender.com",
-            "supports_credentials": True,
-            "allow_headers": ["Content-Type", "Authorization"],
-            "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-            "expose_headers": ["Content-Type", "Authorization"]
+        r"/api/*": {
+            "origins": "https://vyox-frontend.onrender.com"
         }
     },
+    supports_credentials=True, 
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    expose_headers=["Content-Type", "Authorization"]
 )
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
@@ -40,7 +40,7 @@ app.config.update({
     'SESSION_COOKIE_SECURE': True,
     'SESSION_COOKIE_SAMESITE': 'None',
     'SESSION_COOKIE_HTTPONLY': True,
-    'SESSION_REFRESH_EACH_REQUEST': True
+    'SESSION_REFRESH_EACH_REQUEST': False
 })
 
 # Initialize session after config
