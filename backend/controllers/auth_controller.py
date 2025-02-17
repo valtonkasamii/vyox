@@ -31,7 +31,7 @@ def callback():
     if response.status_code == 200:
         access_token = response.json()['access_token']
         session['access_token'] = access_token
-        return redirect("https://vyox-frontend.onrender.com")
+        return redirect("https://vyox.vercel.app")
     else:
         return jsonify({"error": "OAuth failed", "details": response.json()}), 400
     

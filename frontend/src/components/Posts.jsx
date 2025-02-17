@@ -686,7 +686,7 @@ const Posts = ({profile, user, starr, single}) => {
 
     const handleClickContainer = (id, e) => {
         if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
-            window.location.href = `http://localhost:5173/post/${id}`;
+            window.location.href = `https://vyox.vercel.app/post/${id}`;
         }
     };
   return (
