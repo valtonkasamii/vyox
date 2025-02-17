@@ -7,18 +7,16 @@ from routes.auth_routes import auth_routes
 from routes.posts_route import post_routes
 import redis
 from datetime import timedelta
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv()
 
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 CORS(
     app,
     resources={
         r"/api/*": {
-            "origins": "https://vyox-frontend.onrender.com",
+            "origins": "https://vyox-frontend.vercel.app",
             "allow_headers": ["Accept", "Content-Type", "Origin", "Authorization"],
             "expose_headers": ["Accept", "Content-Type", "Origin", "Authorization"]
         }

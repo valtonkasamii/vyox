@@ -15,7 +15,7 @@ function App() {
 
   const getMe = async () => {
     try {
-      const response = await fetch("https://vyox-backend.onrender.com/api/me", {
+      const response = await fetch("https://vyox-backend.vercel.app/api/me", {
       credentials: "include"
       })
       if (!response.ok) {
