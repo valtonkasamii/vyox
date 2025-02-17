@@ -16,7 +16,7 @@ CORS(
     app,
     resources={
         r"/api/*": {
-            "origins": "https://vyox-frontend.vercel.app",
+            "origins": "https://vyox.vercel.app",
             "allow_headers": ["Accept", "Content-Type", "Origin", "Authorization"],
             "expose_headers": ["Accept", "Content-Type", "Origin", "Authorization"]
         }

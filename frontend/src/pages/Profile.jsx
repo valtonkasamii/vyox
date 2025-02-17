@@ -16,7 +16,6 @@ const Profile = ({user}) => {
     
     const getProfile = async () => {
         const username = window.location.href.split("/").pop()
-        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         try {
             const response = await fetch(`${mastodonServer}/api/v1/accounts/lookup?acct=${username}`, {
@@ -59,7 +58,6 @@ const Profile = ({user}) => {
             ...prevProfile,
             followers_count: prevProfile.followers_count + 1,
         }))
-        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         try {
             const response = await fetch(`${mastodonServer}/api/v1/accounts/${profile.id}/follow`, {
@@ -83,7 +81,6 @@ const Profile = ({user}) => {
             ...prevProfile,
             followers_count: prevProfile.followers_count - 1,
         }))
-        const accessToken = import.meta.env.VITE_FEDIVERSE_ACCESS_TOKEN;
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         try {
             const response = await fetch(`${mastodonServer}/api/v1/accounts/${profile.id}/unfollow`, {
