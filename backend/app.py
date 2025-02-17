@@ -7,10 +7,12 @@ from routes.auth_routes import auth_routes
 from routes.posts_route import post_routes
 import redis
 from datetime import timedelta
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv()
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 CORS(
     app,
@@ -23,14 +25,6 @@ CORS(
     },
     supports_credentials=True
 )
-
-@app.after_request
-def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "https://vyox-frontend.onrender.com"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, Origin, Authorization"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    return response
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 app.config.update({
