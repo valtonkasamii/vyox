@@ -6,7 +6,7 @@ const Navbar = ({profile}) => {
     const [menu, setMenu] = useState(false)
 
     const logout = async () => {
-        const response = await fetch('https://vyox-backend.vercel.app/api/logout', {
+        const response = await fetch('https://vyox-backend.onrender.com/api/logout', {
             credentials: 'include',
             method: 'POST'
         })
