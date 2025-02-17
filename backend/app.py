@@ -14,13 +14,11 @@ app = Flask(__name__)
 
 CORS(
     app,
-    resources={r"/*": {
-        "origins": "https://vyox-frontend.onrender.com",
-        "supports_credentials": True,
-        "allow_headers": ["Content-Type", "Authorization"],
-        "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"],
-        "expose_headers": ["Content-Type", "Authorization"]  # Add this line
-    }},
+    origins="https://vyox-frontend.onrender.com",
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    expose_headers=["Content-Type", "Authorization"],
 )
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
@@ -37,17 +35,12 @@ app.config.update({
     'PERMANENT_SESSION_LIFETIME': timedelta(days=30),  # Set session lifetime
     'SESSION_COOKIE_SECURE': True,
     'SESSION_COOKIE_SAMESITE': 'None',
-    'SESSION_REFRESH_EACH_REQUEST': False,  # Disable automatic refresh
     'SESSION_COOKIE_HTTPONLY': True,
-    'SESSION_COOKIE_DOMAIN': '.onrender.com'  # Match subdomains
+    'SESSION_REFRESH_EACH_REQUEST': False
 })
 
 # Initialize session after config
 Session(app)
-
-@app.before_request
-def make_session_permanent():
-    app.permanent_session_lifetime = timedelta(days=30)
 
 app.register_blueprint(auth_routes)
 app.register_blueprint(post_routes)
