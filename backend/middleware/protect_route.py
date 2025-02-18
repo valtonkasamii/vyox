@@ -1,10 +1,11 @@
 from functools import wraps
-from flask import session, jsonify
+from flask import session, jsonify, request
 
 def authenticate_request(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        access_token = session.get('access_token')
+        data = request.get_json() or {}
+        access_token = data.get('accessToken')
 
         if not access_token:
             return jsonify({"error": "User not authenticated"}), 401

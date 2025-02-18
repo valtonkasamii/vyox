@@ -3,7 +3,6 @@ import requests
 import os
 
 def login():
-    session.clear()
     client_id = os.getenv('FEDIVERSE_CLIENT_KEY')
     client_secret = os.getenv('FEDIVERSE_CLIENT_SECRET')
     instance_url = os.getenv('FEDIVERSE_INSTANCE_URL')
@@ -30,14 +29,15 @@ def callback():
     response = requests.post(token_url, data=data)
     if response.status_code == 200:
         access_token = response.json()['access_token']
-        session['access_token'] = access_token
-        return redirect("https://vyox.vercel.app")
+        return redirect(f"http://localhost:5173/access_token/{access_token}")
     else:
         return jsonify({"error": "OAuth failed", "details": response.json()}), 400
     
 def getme():
+    data = request.get_json() or {}
+    access_token = data.get('accessToken')
+
     instance_url = os.getenv('FEDIVERSE_INSTANCE_URL')
-    access_token = session.get('access_token')
 
     if not access_token:
         return jsonify({"error": "No access token provided"}), 401
@@ -64,7 +64,6 @@ def getme():
 
 def logout():
         # Clear the entire session
-        session.clear()
         print("Session cleared")
 
         response = jsonify({"message": "Logout successful"}), 200

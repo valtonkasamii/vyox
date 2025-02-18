@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useDispatch, useSelector } from 'react-redux';
+import { addToken } from './reducers/userReducer.js';
 import './App.css'
 import { Navigate, Route, Routes } from "react-router-dom"
 import Navbar from './components/Navbar.jsx'
@@ -12,11 +12,18 @@ import Post from './pages/Post.jsx'
 function App() {
   const [auth, setAuth] = useState(null)
   const [loading, setLoading] = useState(true)
-
+  const dispatch = useDispatch();
+  const accessToken = useSelector((state) => state.user.token);
+  console.log(accessToken)
   const getMe = async () => {
+    if (accessToken) {
     try {
       const response = await fetch("https://vyox-backend.onrender.com/api/me", {
-      credentials: "include"
+           method: 'POST',
+           headers: {
+              'Content-Type': 'application/json',
+           },
+           body: JSON.stringify({accessToken})
       })
       if (!response.ok) {
         setAuth(null)
@@ -29,12 +36,27 @@ function App() {
     } finally {
       setLoading(false)
     }
+  } else {
+    setLoading(false)
+  }
+  }
+
+  const getToken = () => {
+    if (window.location.href.split('/')[3] === 'access_token') {
+      if (window.location.href.split('/').length >= 4) {
+        dispatch(addToken(window.location.href.split('/')[4]))
+      }
+    }
   }
 
   useEffect(() => {
+    getToken()
     getMe()
   }, [])
 
+  useEffect(() => {
+    getMe()
+  }, [accessToken])
 
   if (loading) {
     return <div className="flex flex-col h-[100vh] justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-full border-2'>Loading</h1></div>

@@ -1,7 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addPosts, addRefresh, addId, deletePosts, hide, addLike, addUnlike } from '../reducers/postsReducer.js';
-import { useSelector } from 'react-redux';
 import { faStar as solidHeart, faEllipsisH, faImage } from '@fortawesome/free-solid-svg-icons';
 import { faStar as faHeart, faComment as faReply } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -33,7 +32,7 @@ const Posts = ({profile, user, starr, single}) => {
     const [postimg, setPostimg] = useState([])
     const fileInputRef = useRef(null)
     const [error, setError] = useState(false)
-    const accessToken = user.access_token
+    const accessToken = useSelector((state) => state.user.token);
     const [replies1, setReplies1] = useState([])
     const replies = replies1.slice(0, num)
     const [comment, setComment] = useState('')
@@ -56,7 +55,7 @@ const Posts = ({profile, user, starr, single}) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({max_id, since_id})            
+                body: JSON.stringify({max_id, since_id, accessToken})            
             })
         } else if (profile && !starr && !single) {
             let url
@@ -686,7 +685,7 @@ const Posts = ({profile, user, starr, single}) => {
 
     const handleClickContainer = (id, e) => {
         if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
-            window.location.href = `https://vyox.vercel.app/post/${id}`;
+            window.location.href = `http://localhost:5173/post/${id}`;
         }
     };
   return (
@@ -696,7 +695,7 @@ const Posts = ({profile, user, starr, single}) => {
             <option value="Media">Media</option>
             <option value="Text">Text</option>
         </select>
-        {!profile && <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`${selectWidth(select2)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
+        {!profile && <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`${select2Width(select2)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
             <option value="Explore">Explore</option>
             <option value="Following">Following</option>
         </select>}
