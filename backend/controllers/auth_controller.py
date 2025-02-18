@@ -4,7 +4,6 @@ import os
 
 def login():
     client_id = os.getenv('FEDIVERSE_CLIENT_KEY')
-    client_secret = os.getenv('FEDIVERSE_CLIENT_SECRET')
     instance_url = os.getenv('FEDIVERSE_INSTANCE_URL')
     
     # Redirect to Mastodon OAuth
