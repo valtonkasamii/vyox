@@ -44,19 +44,23 @@ def getme():
     headers = {"Authorization": f"Bearer {access_token}"}
     url = f"{instance_url}/api/v1/accounts/verify_credentials"
     response = requests.get(url, headers=headers)
-
+    
     if response.status_code == 200:
         user_data = response.json()
-        return jsonify({
-            "username": user_data.get("username"),
-            "name": user_data.get("display_name"),
-            "profile_pic": user_data.get("avatar"),
-            "followers_count": user_data.get("followers_count"),
-            "following_count": user_data.get("following_count"),
-            "statuses_count": user_data.get("statuses_count"),
-            "other_data": user_data,
-            "access_token": access_token
-        }), 200
+        flask_response = jsonify({
+        "username": user_data.get("username"),
+        "name": user_data.get("display_name"),
+        "profile_pic": user_data.get("avatar"),
+        "followers_count": user_data.get("followers_count"),
+        "following_count": user_data.get("following_count"),
+        "statuses_count": user_data.get("statuses_count"),
+        "other_data": user_data,
+        "access_token": access_token
+    })
+        flask_response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        flask_response.headers["Pragma"] = "no-cache"
+        flask_response.headers["Expires"] = "0"
+        return flask_response, 200
     else:
         return jsonify({"error": "Failed to retrieve user data", "details": response.json()}), response.status_code   
 
