@@ -28,7 +28,7 @@ def callback():
     response = requests.post(token_url, data=data)
     if response.status_code == 200:
         access_token = response.json()['access_token']
-        return redirect(f"http://localhost:5173/access_token/{access_token}")
+        return redirect(f"https://vyox.vercel.app/access_token/{access_token}")
     else:
         return jsonify({"error": "OAuth failed", "details": response.json()}), 400
     
