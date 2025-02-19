@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 CORS(
     app,
-    origins="http://localhost:5173",
+    origins="https://vyox.vercel.app",
     allow_headers=["Accept", "Content-Type", "Origin", "Authorization"],
     expose_headers=["Accept", "Content-Type", "Origin", "Authorization"],
     supports_credentials=True
