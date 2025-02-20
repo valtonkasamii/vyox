@@ -9,7 +9,21 @@
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "app.py"
+        "dest": "app.py",
+        "headers": [
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "https://vyox.vercel.app"
+            },
+            {
+              "key": "Access-Control-Allow-Headers",
+              "value": "Accept, Content-Type, Origin, Authorization"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            }
+          ]
       }
     ]
   }
