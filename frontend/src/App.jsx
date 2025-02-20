@@ -42,6 +42,7 @@ function App() {
   }
 
   const getToken = () => {
+    setLoading(true)
     if (window.location.href.split('/')[3] === 'access_token') {
       if (window.location.href.split('/').length >= 4) {
         dispatch(addToken(window.location.href.split('/')[4]))
@@ -50,8 +51,11 @@ function App() {
   }
 
   useEffect(() => {
-    getToken()
+    if (!accessToken) {
+    getToken() 
+  } else {
     getMe()
+  }
   }, [])
 
   useEffect(() => {
