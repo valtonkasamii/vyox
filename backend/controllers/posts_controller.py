@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 from data_science.post import is_english, has_a_tags
 from functions.post import fetch_multiple_old_posts
-from machine_learning.post import is_nsfw
 
 def getAllPosts():
     data = request.get_json() or {}
