@@ -49,7 +49,7 @@ const Posts = ({profile, user, starr, single}) => {
             let response
             let response2
             if (!profile && select2 === "Explore" && !single) {
-         response = await fetch('https://vyox-backend.onrender.com/api/posts', {
+         response = await fetch('https://vyox-backend.vercel.app/api/posts', {
                 credentials: 'include',
                 method: 'POST',
                 headers: {
