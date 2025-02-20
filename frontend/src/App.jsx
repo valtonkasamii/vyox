@@ -62,7 +62,7 @@ function App() {
     getMe()
   }, [accessToken])
 
-  if (loading || accessToken) {
+  if (loading || !auth) {
     return <div className="flex flex-col h-[100vh] justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-full border-2'>Loading</h1></div>
   }
   return (
