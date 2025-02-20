@@ -1,6 +1,6 @@
 import requests
 
-def fetch_multiple_old_posts(instance_url, headers, postsOld, iterations=5, limit=40):
+def fetch_multiple_old_posts(instance_url, headers, postsOld, iterations=4, limit=40):
     all_posts = postsOld
     
     if not isinstance(postsOld, list) or not postsOld:
