@@ -49,7 +49,7 @@ const Posts = ({profile, user, starr, single}) => {
             let response
             let response2
             if (!profile && select2 === "Explore" && !single) {
-         response = await fetch('http://127.0.0.1:5000/api/posts', {
+         response = await fetch('https://vyox-backend.onrender.com/api/posts', {
                 credentials: 'include',
                 method: 'POST',
                 headers: {
@@ -556,7 +556,7 @@ const Posts = ({profile, user, starr, single}) => {
             element.style.color = 'yellow';
     
             if (element.href.startsWith('https://mastodon.social')) {
-                element.href = element.href.replace('https://mastodon.social', 'http://localhost:5173');
+                element.href = element.href.replace('https://mastodon.social', 'https://vyox.vercel.app');
             }
         });
     
@@ -667,7 +667,7 @@ const Posts = ({profile, user, starr, single}) => {
             element.style.color = 'silver';
     
             if (element.href.startsWith('https://mastodon.social')) {
-                element.href = element.href.replace('https://mastodon.social', 'http://localhost:5173');
+                element.href = element.href.replace('https://mastodon.social', 'https://vyox.vercel.app');
             }
         });
     
@@ -688,7 +688,7 @@ const Posts = ({profile, user, starr, single}) => {
 
     const handleClickContainer = (id, e) => {
         if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
-            window.location.href = `http://localhost:5173/post/${id}`;
+            window.location.href = `https://vyox.vercel.app/post/${id}`;
         }
     };
   return (
