@@ -42,7 +42,6 @@ function App() {
   }
 
   const getToken = () => {
-    setLoading(true)
     if (window.location.href.split('/')[3] === 'access_token') {
       if (window.location.href.split('/').length >= 4) {
         dispatch(addToken(window.location.href.split('/')[4]))
@@ -52,6 +51,7 @@ function App() {
 
   useEffect(() => {
     if (!accessToken) {
+    setLoading(true)
     getToken() 
   } else {
     getMe()
@@ -62,7 +62,7 @@ function App() {
     getMe()
   }, [accessToken])
 
-  if (loading) {
+  if (loading || accessToken) {
     return <div className="flex flex-col h-[100vh] justify-center items-center text-5xl text-white font-[500]"><h1 className='px-5 pt-3 pb-4 rounded-full border-2'>Loading</h1></div>
   }
   return (
