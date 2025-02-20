@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 model = None  # Cache the model globally
 
-def is_nsfw(image_url, threshold=0.996):
+def is_nsfw(image_url, threshold=0.99):
     """
     Check if an image is NSFW using a pre-trained TensorFlow/Keras model.
     Returns True if NSFW probability >= threshold.
