@@ -374,6 +374,12 @@ const Posts = ({profile, user, starr, single}) => {
                         setPostSwitcher(firstData)
                     }
             }
+            if (allPosts.length < 100) {
+                if (!isFetchingRef.current) {
+                isFetchingRef.current = true
+                get10posts(num)
+                }
+            }
     }, [allPosts])
 
     useEffect(() => {
