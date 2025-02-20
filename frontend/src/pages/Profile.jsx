@@ -3,6 +3,7 @@ import Posts from '../components/Posts.jsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as sstar } from '@fortawesome/free-solid-svg-icons';
+import { useSelector } from 'react-redux';
 
 const Profile = ({user}) => {
     const [profile, setProfile] = useState(null)   
@@ -12,7 +13,7 @@ const Profile = ({user}) => {
     const [fixed, setFixed] = useState(false)
     const fileInputRef = useRef(null);
     const [pfp, setPfp] = useState(null)
-    const accessToken = user.access_token
+    const accessToken = useSelector((state) => state.user.token);
     
     const getProfile = async () => {
         const username = window.location.href.split("/").pop()

@@ -71,13 +71,13 @@ def getAllPosts():
             if not has_a_tags(content):
                 filtered_posts.append(post)
 
-    # Deduplicate posts by account.acct (keep first occurrence)
+    # Deduplicate posts by account.username (keep first occurrence)
     seen_accounts = set()
     deduplicated_posts = []
     for post in filtered_posts:
-        account_acct = post.get('account', {}).get('acct')
-        if account_acct not in seen_accounts:
-            seen_accounts.add(account_acct)
+        account_username = post.get('account', {}).get('username')
+        if account_username not in seen_accounts:
+            seen_accounts.add(account_username)
             deduplicated_posts.append(post)
 
     # Filter posts with NSFW images

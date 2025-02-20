@@ -41,7 +41,7 @@ const Posts = ({profile, user, starr, single}) => {
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
     console.log(posts)
 
-    const get10posts = async (currentNum) => {
+    const get10posts = async (currentNum, following) => {
         const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
       if (((refresh >= allPosts.length || allPosts.length <= 200 || (allPosts.length - 200) <= currentNum || (allPosts.length - 200) <= refresh) || profile || select2 === "Following" || single)) {
         try {  
@@ -49,7 +49,7 @@ const Posts = ({profile, user, starr, single}) => {
             let response
             let response2
             if (!profile && select2 === "Explore" && !single) {
-         response = await fetch('https://vyox-backend.onrender.com/api/posts', {
+         response = await fetch('http://127.0.0.1:5000/api/posts', {
                 credentials: 'include',
                 method: 'POST',
                 headers: {
@@ -157,10 +157,14 @@ const Posts = ({profile, user, starr, single}) => {
                 console.error(error.message)
               } finally {
                 setLoading2(false)
+                if (!following) {
                 isFetchingRef.current = false
+                }
               }
         } else {
+            if (!following) {
             isFetchingRef.current = false
+            }
         }
         
     } 
@@ -426,8 +430,7 @@ const Posts = ({profile, user, starr, single}) => {
             get10posts(20)
         }
         if (select2 === "Following") {
-            get10posts(20)
-            isFetchingRef.current = true
+            get10posts(20, true)
         } else {
             setLocalMax(null)
             setFollowingPosts([])

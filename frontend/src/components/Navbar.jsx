@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
-import { faUser, faSearch, faHome, faMessage, faBell } from '@fortawesome/free-solid-svg-icons'
+import { faUser, faSearch, faHome, faBell } from '@fortawesome/free-solid-svg-icons'
+import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { logout } from '../reducers/userReducer';

@@ -28,7 +28,7 @@ def callback():
     response = requests.post(token_url, data=data)
     if response.status_code == 200:
         access_token = response.json()['access_token']
-        return redirect(f"https://vyox.vercel.app/access_token/{access_token}")
+        return redirect(f"http://localhost:5173/access_token/{access_token}")
     else:
         return jsonify({"error": "OAuth failed", "details": response.json()}), 400
     
@@ -47,20 +47,15 @@ def getme():
     
     if response.status_code == 200:
         user_data = response.json()
-        flask_response = jsonify({
-        "username": user_data.get("username"),
-        "name": user_data.get("display_name"),
-        "profile_pic": user_data.get("avatar"),
-        "followers_count": user_data.get("followers_count"),
-        "following_count": user_data.get("following_count"),
-        "statuses_count": user_data.get("statuses_count"),
-        "other_data": user_data,
-        "access_token": access_token
-    })
-        flask_response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-        flask_response.headers["Pragma"] = "no-cache"
-        flask_response.headers["Expires"] = "0"
-        return flask_response, 200
+        return jsonify({
+            "username": user_data.get("username"),
+            "name": user_data.get("display_name"),
+            "profile_pic": user_data.get("avatar"),
+            "followers_count": user_data.get("followers_count"),
+            "following_count": user_data.get("following_count"),
+            "statuses_count": user_data.get("statuses_count"),
+            "other_data": user_data
+        }), 200
     else:
         return jsonify({"error": "Failed to retrieve user data", "details": response.json()}), response.status_code   
 
