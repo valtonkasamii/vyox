@@ -80,15 +80,4 @@ def getAllPosts():
             seen_accounts.add(account_username)
             deduplicated_posts.append(post)
 
-    # Filter posts with NSFW images
-    safe_posts = []
-    for post in deduplicated_posts:
-        has_nsfw = False
-        for media in post.get('media_attachments', []):
-            if media['type'] == 'image' and is_nsfw(media['url']):
-                has_nsfw = True
-                break
-        if not has_nsfw:
-            safe_posts.append(post)
-
-    return jsonify(safe_posts), 200
+    return jsonify(deduplicated_posts), 200
