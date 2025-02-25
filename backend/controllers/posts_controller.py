@@ -65,7 +65,7 @@ def getAllPosts():
     for post in combined_posts:
         content = post.get('content', '')
         media_attachments = post.get('media_attachments', [])
-        if (content and is_english(content)) or (not content and len(media_attachments) > 0):
+        if (len(content) > 36 and is_english(content)):
             # Only add posts that don't have <a> tags in the content
             if not has_a_tags(content):
                 filtered_posts.append(post)

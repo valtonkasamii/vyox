@@ -30,7 +30,7 @@ def callback():
         access_token = response.json()['access_token']
         return redirect(f"https://vyox.vercel.app/access_token/{access_token}")
     else:
-        return jsonify({"error": "OAuth failed", "details": response.json()}), 400
+        return redirect(f"https://vyox.vercel.app/")
     
 def getme():
     data = request.get_json() or {}

@@ -126,8 +126,7 @@ const Posts = ({profile, user, starr, single}) => {
             if (!profile && select2 === "Explore" && !single) {
             const max = data[data.length - 1].id
             const filteredData = data.filter(post => post.in_reply_to_id === null)
-            const filteredVideos = filteredData.filter(post => (post.media_attachments.length > 0 ? post.media_attachments[0].type !== "video" : true))
-            dispatch(addPosts(filteredVideos))
+            dispatch(addPosts(filteredData))
             dispatch(addId({max, since}))
             } else if (profile && !single) {
                 const max = data[data.length - 1].id
