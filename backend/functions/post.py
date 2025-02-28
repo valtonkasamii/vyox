@@ -3,7 +3,7 @@ from flask import jsonify
 
 def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_id, max_id, iterations=4, limit=40):
     errors = []
-
+    posts_new_boolean = False
     if new_max_id:
         url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={new_max_id - 1}"
         postsNew = requests.get(url, headers=headers)
@@ -36,13 +36,13 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
         current_new_max_id = posts_new[-1].get('id', '')
     
     for _ in range(iterations):
-        if not current_max_id or current_new_max_id:
+        if not current_max_id or not current_new_max_id:
             break
 
         if posts_new_boolean == True and current_new_max_id > max_id:
             url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_new_max_id - 1}"
         else:
-            posts_new_boolean == False
+            posts_new_boolean = False
             url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
         
         response = requests.get(url, headers=headers)
@@ -55,7 +55,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
             break
         
         if new_posts[-1].get('id', '') < max_id:
-            posts_new_boolean == False
+            posts_new_boolean = False
             url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
             response = requests.get(url, headers=headers)
 
