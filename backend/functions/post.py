@@ -5,10 +5,10 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
     errors = []
     posts_new_boolean = False
     if new_max_id:
-        url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={new_max_id - 1}"
+        url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={int(new_max_id) - 1}"
         postsNew = requests.get(url, headers=headers)
         posts_new = postsNew.json()
-        if posts_new[-1].get('id', '') > max_id:
+        if int(posts_new[-1].get('id', '0')) > int(max_id):
             posts_new_boolean = True
         else:
             posts_new_boolean = False
@@ -39,11 +39,11 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
         if not current_max_id or not current_new_max_id:
             break
 
-        if posts_new_boolean == True and current_new_max_id > max_id:
-            url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_new_max_id - 1}"
+        if posts_new_boolean == True and int(current_new_max_id) > int(max_id):
+            url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={int(current_new_max_id) - 1}"
         else:
             posts_new_boolean = False
-            url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
+            url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={int(current_max_id) - 1}"
         
         response = requests.get(url, headers=headers)
         
@@ -54,9 +54,9 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
         if not new_posts:
             break
         
-        if new_posts[-1].get('id', '') < max_id:
+        if int(new_posts[-1].get('id', '0')) < int(max_id):
             posts_new_boolean = False
-            url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
+            url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={int(current_max_id) - 1}"
             response = requests.get(url, headers=headers)
 
         all_posts.extend(new_posts)

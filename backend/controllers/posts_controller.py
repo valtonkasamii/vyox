@@ -22,19 +22,18 @@ def getAllPosts():
 
     # Build URLs
     base_url = f"{instance_url}/api/v1/timelines/public?remote=true&limit=40"
-    url_new = f"{base_url}&since_id={since_id + 1}" if since_id else None
-    url_old = f"{base_url}&max_id={max_id - 1}" if max_id else base_url
+    url_new = f"{base_url}&since_id={int(since_id) + 1}" if since_id else None
+    url_old = f"{base_url}&max_id={int(max_id) - 1}" if max_id else base_url
 
     # Fetch posts
     posts_new = []
     posts_old = []
     errors = []
 
-
     response_new = requests.get(base_url, headers=headers)
     if response_new.status_code == 200:
         posts_new_first = response_new.json()
-        if posts_new_first[-1].get('id', '') > since_id:
+        if since_id and int(posts_new_first[-1].get('id', '0')) > int(since_id):
             posts_new = posts_new_first
     else:
         errors.append(f"New posts failed: {response_new.status_code}")
@@ -42,7 +41,7 @@ def getAllPosts():
     # Fetch additional old posts if needed
     new_max_id = False
     if len(posts_new) > 0:
-        new_max_id=posts_new[-1].get('id', '')
+        new_max_id = posts_new[-1].get('id', '')
 
     multiple_old_posts = []
     if posts_new:
