@@ -22,38 +22,38 @@ def getAllPosts():
 
     # Build URLs
     base_url = f"{instance_url}/api/v1/timelines/public?remote=true&limit=40"
-    url_new = f"{base_url}&since_id={since_id}" if since_id else None
-    url_old = f"{base_url}&max_id={max_id}" if max_id else base_url
+    url_new = f"{base_url}&since_id={since_id + 1}" if since_id else None
+    url_old = f"{base_url}&max_id={max_id - 1}" if max_id else base_url
 
     # Fetch posts
     posts_new = []
     posts_old = []
     errors = []
 
-    if since_id and url_new:
-        response_new = requests.get(url_new, headers=headers)
-        if response_new.status_code == 200:
-            posts_new = response_new.json()
-        else:
-            errors.append(f"New posts failed: {response_new.status_code}")
 
-    response_old = requests.get(url_old, headers=headers)
-    if response_old.status_code == 200:
-        posts_old = response_old.json()
+    response_new = requests.get(base_url, headers=headers)
+    if response_new.status_code == 200:
+        posts_new_first = response_new.json()
+        if posts_new_first[-1].get('id', '') > since_id:
+            posts_new = posts_new_first
     else:
-        errors.append(f"Old posts failed: {response_old.status_code}")
-
-    if errors:
-        return jsonify({"error": "Failed to fetch posts", "details": errors}), 400
+        errors.append(f"New posts failed: {response_new.status_code}")
 
     # Fetch additional old posts if needed
+    new_max_id = False
+    if len(posts_new) > 0:
+        new_max_id=posts_new[-1].get('id', '')
+
     multiple_old_posts = []
     if posts_old:
         try:
             multiple_old_posts = fetch_multiple_old_posts(
                 instance_url=instance_url,
                 headers=headers,
-                postsOld=posts_old
+                new_max_id=new_max_id,
+                url_old=url_old,
+                since_id=since_id,
+                max_id=max_id
             )
         except Exception as e:
             print(f"Error fetching old posts: {str(e)}")
@@ -65,7 +65,7 @@ def getAllPosts():
     for post in combined_posts:
         content = post.get('content', '')
         media_attachments = post.get('media_attachments', [])
-        if (len(content) > 36 and is_english(content)):
+        if (len(content) > 60 and is_english(content)):
             # Only add posts that don't have <a> tags in the content
             if not has_a_tags(content):
                 filtered_posts.append(post)
