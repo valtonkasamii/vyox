@@ -27,20 +27,19 @@ def getAllPosts():
 
     # Fetch posts
     posts_new = []
-    posts_old = []
     errors = []
 
     response_new = requests.get(base_url, headers=headers)
     if response_new.status_code == 200:
         posts_new_first = response_new.json()
-        if since_id and int(posts_new_first[-1].get('id', '0')) > int(since_id):
+        if posts_new_first and since_id and int(posts_new_first[-1].get('id', '0')) > int(since_id):
             posts_new = posts_new_first
     else:
         errors.append(f"New posts failed: {response_new.status_code}")
 
     # Fetch additional old posts if needed
     new_max_id = False
-    if len(posts_new) > 0:
+    if posts_new:
         new_max_id = posts_new[-1].get('id', '')
 
     multiple_old_posts = []
@@ -63,8 +62,7 @@ def getAllPosts():
     filtered_posts = []
     for post in combined_posts:
         content = post.get('content', '')
-        media_attachments = post.get('media_attachments', [])
-        if (len(content) > 60 and is_english(content)):
+        if len(content) > 60 and is_english(content):
             # Only add posts that don't have <a> tags in the content
             if not has_a_tags(content):
                 filtered_posts.append(post)
@@ -74,7 +72,7 @@ def getAllPosts():
     deduplicated_posts = []
     for post in filtered_posts:
         account_username = post.get('account', {}).get('username')
-        if account_username not in seen_accounts:
+        if account_username and account_username not in seen_accounts:
             seen_accounts.add(account_username)
             deduplicated_posts.append(post)
 
