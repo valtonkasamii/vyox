@@ -63,9 +63,9 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
 
         all_posts.extend(new_posts)
         if new_posts and posts_new_boolean:
-            current_new_max_id = new_posts[-1].get('id', '')
+            current_new_max_id = new_posts[-1].get('id', '0')
             # Update current_max_id when fetching old posts to avoid infinite loops
             if not posts_new_boolean:
-                current_max_id = new_posts[-1].get('id', current_max_id)  # Critical fix: Update pagination cursor
+                current_max_id = new_posts[-1].get('id', '0')  # Critical fix: Update pagination cursor
     
     return all_posts
