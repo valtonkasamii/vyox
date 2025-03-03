@@ -32,10 +32,11 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
             return jsonify({"error": "Failed to fetch posts", "details": errors}), 400
 
     all_posts = posts_new if posts_new_boolean else posts_old
-
+    
     if posts_new_boolean and int(posts_new[-1].get('id', '')) > int(max_id):
         current_new_max_id = int(posts_new[-1].get('id', ''))
     else:
+        current_max_id = None
         posts_new_boolean = False 
 
     for _ in range(iterations):
@@ -68,7 +69,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
         if new_posts and posts_new_boolean:
             current_new_max_id = int(new_posts[-1].get('id', ''))
             # Update current_max_id when fetching old posts to avoid infinite loops
-        else:
+        elif new_posts and not posts_new_boolean:
             current_max_id = int(new_posts[-1].get('id', ''))  # Critical fix: Update pagination cursor
     
     return all_posts
