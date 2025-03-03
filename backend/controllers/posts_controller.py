@@ -32,7 +32,7 @@ def getAllPosts():
     response_new = requests.get(base_url, headers=headers)
     if response_new.status_code == 200:
         posts_new_first = response_new.json()
-        if posts_new_first and since_id and int(posts_new_first[-1].get('id', '0')) > int(since_id):
+        if (posts_new_first and int(posts_new_first[-1].get('id', '')) > int(max_id)) or not max_id:
             posts_new = posts_new_first
     else:
         errors.append(f"New posts failed: {response_new.status_code}")
