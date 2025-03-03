@@ -40,7 +40,7 @@ def getAllPosts():
     # Fetch additional old posts if needed
     new_max_id = False
     if posts_new:
-        new_max_id = posts_new[-1].get('id', '')
+        new_max_id = posts_new[-1].get('id', 0)
 
     multiple_old_posts = []
     if posts_new:
