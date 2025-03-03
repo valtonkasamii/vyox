@@ -14,7 +14,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
         if posts_new_response.status_code == 200:
             posts_new = posts_new_response.json()
             if posts_new:
-                # Check if we have newer posts than current max_id
+                # Check if the last post's ID is greater than the max_id from the frontend
                 last_new_id = int(posts_new[-1].get('id', ''))
                 posts_new_boolean = last_new_id > int(max_id)
     
@@ -57,6 +57,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
         if not new_posts:
             break
 
+        # Check if the last post's ID is greater than the max_id from the frontend
         if int(new_posts[-1].get('id', '')) < int(max_id):
             posts_new_boolean = False
             url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
@@ -68,8 +69,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
         all_posts.extend(new_posts)
         if new_posts and posts_new_boolean:
             current_new_max_id = int(new_posts[-1].get('id', ''))
-            # Update current_max_id when fetching old posts to avoid infinite loops
         elif new_posts and not posts_new_boolean:
-            current_max_id = int(new_posts[-1].get('id', ''))  # Critical fix: Update pagination cursor
+            current_max_id = int(new_posts[-1].get('id', ''))  # Update pagination cursor
     
     return all_posts
