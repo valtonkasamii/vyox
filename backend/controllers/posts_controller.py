@@ -20,38 +20,33 @@ def getAllPosts():
         "Accept": "application/json"
     }
 
-    # Build URLs
+    # Build base URL
     base_url = f"{instance_url}/api/v1/timelines/public?remote=true&limit=40"
-    url_new = f"{base_url}&since_id={int(since_id) + 1}" if since_id else None
-    url_old = f"{base_url}&max_id={int(max_id) - 1}" if max_id else base_url
-
-    # Fetch posts
+    
+    # Fetch initial posts
+    initial_url = base_url
+    if max_id:
+        initial_url += f"&max_id={max_id}"
+    
     posts_new = []
-    errors = []
-
-    response_new = requests.get(base_url, headers=headers)
-    if response_new.status_code == 200:
-        posts_new_first = response_new.json()
-        if (posts_new_first and int(posts_new_first[-1].get('id', '')) > int(max_id)) or not max_id:
-            posts_new = posts_new_first
+    response = requests.get(initial_url, headers=headers)
+    if response.status_code == 200:
+        posts_new = response.json()
     else:
-        errors.append(f"New posts failed: {response_new.status_code}")
+        return jsonify({"error": "Failed to fetch initial posts"}), 400
 
-    # Fetch additional old posts if needed
-    new_max_id = False
-    if posts_new:
-        new_max_id = posts_new[-1].get('id', '')
-
+    # Determine new max_id from the response
+    new_max_id = posts_new[-1]['id'] if posts_new else None
+    
+    # Fetch older posts using the updated max_id
     multiple_old_posts = []
     if posts_new:
         try:
             multiple_old_posts = fetch_multiple_old_posts(
                 instance_url=instance_url,
                 headers=headers,
-                new_max_id=new_max_id,
-                url_old=url_old,
-                since_id=since_id,
-                max_id=max_id
+                current_max_id=new_max_id,
+                iterations=3
             )
         except Exception as e:
             print(f"Error fetching old posts: {str(e)}")
