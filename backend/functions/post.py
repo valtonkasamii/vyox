@@ -32,8 +32,8 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
     all_posts = posts_new if posts_new_boolean else posts_old
 
     # Safely get current max IDs
-    current_max_id = posts_old[-1].get('id', max_id) if posts_old else max_id  # Added fallback to max_id
-    current_new_max_id = posts_new[-1].get('id', current_max_id) if posts_new_boolean and posts_new else current_max_id
+    current_max_id = posts_old[-1].get('id', 0) if posts_old else max_id  # Added fallback to max_id
+    current_new_max_id = posts_new[-1].get('id', 0) if posts_new_boolean and posts_new else False
 
     for _ in range(iterations):
         if not current_max_id or not current_new_max_id:
@@ -62,7 +62,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
             new_posts = response.json()
 
         all_posts.extend(new_posts)
-        if new_posts:
+        if new_posts and posts_new_boolean:
             current_new_max_id = new_posts[-1].get('id', '')
             # Update current_max_id when fetching old posts to avoid infinite loops
             if not posts_new_boolean:
