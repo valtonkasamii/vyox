@@ -1,7 +1,7 @@
 from flask import jsonify
 import requests
 
-def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id, iterations=4, limit=40):
+def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id, url_old, iterations=4, limit=40):
     errors = []
     posts_new_boolean = False
     posts_new = []
