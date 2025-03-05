@@ -30,15 +30,18 @@ def getAllPosts():
     response_new = requests.get(base_url, headers=headers)
     if response_new.status_code == 200:
         posts_new_first = response_new.json()
-        if posts_new_first and (int(posts_new_first[-1].get('id', '')) > int(max_id) or not max_id):
-            posts_new = posts_new_first
+        for post in posts_new_first:
+            if post.get('id', 0) <= since_id and post.get('id', 0) >= max_id:
+                posts_new = False
+            else:
+                posts_new = posts_new_first
     else:
         errors.append(f"New posts failed: {response_new.status_code}")
 
     # Fetch additional old posts if needed
     new_max_id = False
     if posts_new:
-        new_max_id = posts_new[-1].get('id', '')
+        new_max_id = posts_new[-1].get('id', 0)
 
     multiple_old_posts = []
     if posts_new:
