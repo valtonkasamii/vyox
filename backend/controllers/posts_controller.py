@@ -44,15 +44,15 @@ def getAllPosts():
         new_max_id = posts_new[-1].get('id', 0)
 
     multiple_old_posts = []
-        try:
-            multiple_old_posts = fetch_multiple_old_posts(
-                instance_url=instance_url,
-                headers=headers,
-                new_max_id=new_max_id,
-                since_id=since_id,
-                max_id=max_id,
-                url_old=url_old
-            )
+    try:
+        multiple_old_posts = fetch_multiple_old_posts(
+            instance_url=instance_url,
+            headers=headers,
+            new_max_id=new_max_id,
+            since_id=since_id,
+            max_id=max_id,
+            url_old=url_old
+        )
         except Exception as e:
             print(f"Error fetching old posts: {str(e)}")
     
