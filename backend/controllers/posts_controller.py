@@ -23,6 +23,7 @@ def getAllPosts():
     # Build URLs
     base_url = f"{instance_url}/api/v1/timelines/public?remote=true&limit=40"
     url_old = f"{base_url}&max_id={int(max_id) - 1}" if max_id else base_url
+
     # Fetch posts
     posts_new = []
     errors = []
@@ -32,7 +33,7 @@ def getAllPosts():
         posts_new_first = response_new.json()
         for post in posts_new_first:
             if post.get('id', 0) <= since_id and post.get('id', 0) >= max_id:
-                posts_new = False
+                posts_new = []  # Keep as an empty list
             else:
                 posts_new = posts_new_first
     else:
@@ -40,7 +41,7 @@ def getAllPosts():
 
     # Fetch additional old posts if needed
     new_max_id = False
-    if posts_new:
+    if len(posts_new) > 0:
         new_max_id = posts_new[-1].get('id', 0)
 
     multiple_old_posts = []
@@ -53,10 +54,10 @@ def getAllPosts():
             max_id=max_id,
             url_old=url_old
         )
-        except Exception as e:
-            print(f"Error fetching old posts: {str(e)}")
-    
-    if posts_new:
+    except Exception as e:
+        print(f"Error fetching old posts: {str(e)}")
+
+    if len(posts_new) > 0:
         combined_posts = posts_new + multiple_old_posts
     else:
         combined_posts = multiple_old_posts
@@ -66,8 +67,7 @@ def getAllPosts():
     for post in combined_posts:
         content = post.get('content', '')
         if len(content) > 60 and is_english(content):
-            # Only add posts that don't have <a> tags in the content
-            if not has_a_tags(content):
+            if not has_a_tags(content):  # Only add posts that don't have <a> tags
                 filtered_posts.append(post)
 
     # Deduplicate posts by account.username (keep first occurrence)
