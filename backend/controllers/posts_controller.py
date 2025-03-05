@@ -44,7 +44,6 @@ def getAllPosts():
         new_max_id = posts_new[-1].get('id', 0)
 
     multiple_old_posts = []
-    if posts_new:
         try:
             multiple_old_posts = fetch_multiple_old_posts(
                 instance_url=instance_url,
@@ -56,8 +55,11 @@ def getAllPosts():
             )
         except Exception as e:
             print(f"Error fetching old posts: {str(e)}")
-
-    combined_posts = posts_new + multiple_old_posts
+    
+    if posts_new:
+        combined_posts = posts_new + multiple_old_posts
+    else:
+        combined_posts = multiple_old_posts
 
     # Filtering
     filtered_posts = []
