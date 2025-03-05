@@ -40,7 +40,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
     if posts_new_boolean and int(posts_new[-1].get('id', '')) > int(max_id):
         current_new_max_id = int(posts_new[-1].get('id', ''))
     else:
-        current_max_id = None
+        current_new_max_id = None
         posts_new_boolean = False 
 
     for _ in range(iterations):
