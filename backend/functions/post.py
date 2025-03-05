@@ -19,7 +19,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
                     one_post = int(post.get('id', ''))
                     if one_post <= since_id and one_post >= max_id:
                         posts_new_boolean = False
-                     else:
+                    else:
                         posts_new_boolean = True
     
     current_max_id = int(max_id)
