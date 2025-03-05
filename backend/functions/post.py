@@ -21,7 +21,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
                     else:
                         posts_new_boolean = True
     
-    current_max_id = int(max_id)
+    current_max_id = int(max_id) if max_id else None
     # If no new posts, fall back to old posts
     if not posts_new_boolean:
         posts_old_response = requests.get(url_old, headers=headers)
@@ -36,7 +36,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
             return jsonify({"error": "Failed to fetch posts", "details": errors}), 400
 
     all_posts = posts_new if posts_new_boolean else posts_old
-    
+
     if posts_new_boolean:
         for post in posts_new:
             current_new_max_id = int(posts_new[-1].get('id', 0))
