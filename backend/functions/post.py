@@ -16,8 +16,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
             if posts_new:
                 # Check if the last post's ID is greater than the max_id from the frontend
                 for post in posts_new:
-                    one_post = int(post.get('id', ''))
-                    if one_post <= since_id and one_post >= max_id:
+                    if int(post.get('id', 0)) <= since_id and int(post.get('id', 0)) >= max_id:
                         posts_new_boolean = False
                     else:
                         posts_new_boolean = True
@@ -40,7 +39,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
     if posts_new_boolean:
         for post in posts_new:
             current_new_max_id = int(posts_new[-1].get('id', ''))
-            if int(post.get('id', '')) >= int(max_id) and int(post.get('id', '')) <= int(since_id):
+            if int(post.get('id', 0)) >= int(max_id) and int(post.get('id', 0)) <= int(since_id):
                 posts_new_boolean = False
                 current_new_max_id = None
     else:
