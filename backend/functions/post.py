@@ -27,7 +27,8 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
         posts_old_response = requests.get(url_old, headers=headers)
         if posts_old_response.status_code == 200:
             posts_old = posts_old_response.json()
-            current_max_id = int(posts_old[-1].get('id', 0))
+            if posts_old:
+                current_max_id = int(posts_old[-1].get('id', 0))
         else:
             errors.append(f"Old posts failed: {posts_old_response.status_code}")
 
@@ -57,15 +58,16 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
                 break
             else:
                 url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_new_max_id - 1}"
-                 break
-                
-        response = requests.get(url, headers=headers)
-                if response.status_code != 200:
                 break
 
-                new_posts = response.json()
-                if not new_posts:
-                    break
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            break
+
+        new_posts = response.json()
+        if not new_posts:
+            break
+
         # Check if the last post's ID is greater than the max_id from the frontend
         if posts_new_boolean:
             for post in new_posts:
@@ -73,10 +75,10 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
                     posts_new_boolean = False
                     url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
                     response = requests.get(url, headers=headers)
-                    break
                     if response.status_code != 200:
                         break
                     new_posts = response.json()
+                    break  # Added to prevent unnecessary looping
 
         all_posts.extend(new_posts)
         if new_posts and posts_new_boolean:
