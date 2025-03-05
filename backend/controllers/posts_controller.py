@@ -22,8 +22,6 @@ def getAllPosts():
 
     # Build URLs
     base_url = f"{instance_url}/api/v1/timelines/public?remote=true&limit=40"
-    url_new = f"{base_url}&since_id={int(since_id) + 1}" if since_id else None
-    url_old = f"{base_url}&max_id={int(max_id) - 1}" if max_id else base_url
 
     # Fetch posts
     posts_new = []
@@ -49,7 +47,6 @@ def getAllPosts():
                 instance_url=instance_url,
                 headers=headers,
                 new_max_id=new_max_id,
-                url_old=url_old,
                 since_id=since_id,
                 max_id=max_id
             )
