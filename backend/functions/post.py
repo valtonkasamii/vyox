@@ -1,12 +1,12 @@
 from flask import jsonify
 import requests
 
-def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_id, max_id, iterations=4, limit=40):
+def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id, iterations=4, limit=40):
     errors = []
     posts_new_boolean = False
     posts_new = []
     posts_old = []
-    
+    url_old = f"{instance_url}&max_id={int(max_id) - 1}" if max_id else base_url
     # Try to fetch newer posts first
     if new_max_id:
         url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={int(new_max_id) - 1}"
@@ -15,8 +15,12 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
             posts_new = posts_new_response.json()
             if posts_new:
                 # Check if the last post's ID is greater than the max_id from the frontend
-                last_new_id = int(posts_new[-1].get('id', ''))
-                posts_new_boolean = last_new_id > int(max_id)
+                for post in posts_new:
+                    one_post = int(post.get('id', ''))
+                    if one_post <= since_id and one_post >= max_id:
+                        posts_new_boolean = False
+                     else:
+                        posts_new_boolean = True
     
     current_max_id = int(max_id)
     # If no new posts, fall back to old posts
@@ -58,13 +62,15 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, url_old, since_i
             break
 
         # Check if the last post's ID is greater than the max_id from the frontend
-        if int(new_posts[-1].get('id', '')) < int(max_id):
-            posts_new_boolean = False
-            url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
-            response = requests.get(url, headers=headers)
-            if response.status_code != 200:
-                break
-            new_posts = response.json()
+        if posts_new_boolean:
+            for post in new_posts:
+                if int(post.get('id', '')) >= int(max_id) and int(post.get('id', '')) <= int(since_id):
+                    posts_new_boolean = False
+                    url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
+                    response = requests.get(url, headers=headers)
+                    if response.status_code != 200:
+                        break
+                    new_posts = response.json()
 
         all_posts.extend(new_posts)
         if new_posts and posts_new_boolean:
