@@ -6,7 +6,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
     posts_new_boolean = False
     posts_new = []
     posts_old = []
-    url_old = f"{instance_url}&max_id={int(max_id) - 1}" if max_id else base_url
+
     # Try to fetch newer posts first
     if new_max_id:
         url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={int(new_max_id) - 1}"
