@@ -36,15 +36,6 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
 
     all_posts = posts_new if posts_new_boolean else posts_old
 
-    if posts_new_boolean:
-        for post in posts_new:
-            pid = int(post.get('id', 0))
-            if pid >= int(max_id) and pid <= int(since_id):
-                posts_new_boolean = False
-                break
-    else:
-        posts_new_boolean = False
-
     current_new_max_id = int(posts_new[-1].get('id', 0)) if posts_new_boolean and posts_new else None
 
     for _ in range(iterations):
@@ -64,16 +55,14 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
         if not new_posts:
             break
 
-        flag = False
         for post in new_posts:
             pid = int(post.get('id', 0))
             if pid >= int(max_id) and pid <= int(since_id):
-                flag = True
+                posts_new_boolean = False
                 break
 
-        if flag:
+        if not posts_new_boolean:
             # Fetch again using max_id to ensure we're not getting posts within the forbidden range
-            posts_new_boolean = False
             current_new_max_id = None
             url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={current_max_id - 1}"
             response = requests.get(url, headers=headers)
