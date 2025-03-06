@@ -18,6 +18,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
                 for post in posts_new:
                     if int(post.get('id', 0)) <= since_id and int(post.get('id', 0)) >= max_id:
                         posts_new_boolean = False
+                         break
                     else:
                         posts_new_boolean = True
     
