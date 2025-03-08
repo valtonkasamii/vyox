@@ -13,15 +13,17 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
         posts_new_response = requests.get(url, headers=headers)
         if posts_new_response.status_code == 200:
             posts_new = posts_new_response.json()
-            if posts_new:
+            if posts_new and max_id and since_id:
                 for post in posts_new:
                     pid = int(post.get('id', 0))
-                    if pid >= int(max_id) and pid <= int(since_id):
+                    if (pid >= int(max_id) and pid <= int(since_id)):
                         posts_new_boolean = False  # If any post is within range, switch to old posts mode
                         break
                     else:
                         posts_new_boolean = True
-    
+            elif posts_new:
+                posts_new_boolean = True
+                
     current_max_id = int(max_id) if max_id else None
     if not posts_new_boolean:
         posts_old_response = requests.get(url_old, headers=headers)
