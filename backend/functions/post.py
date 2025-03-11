@@ -15,7 +15,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
             posts_new = posts_new_response.json()
             if posts_new and max_id and since_id:
                 posts_new_boolean = not any(
-                    int(post.get('id', '0') or '0') >= int(max_id) and int(post.get('id', '0') or '0') <= int(since_id)
+                    int(post.get('id', 0)) >= int(max_id) and int(post.get('id', 0)) <= int(since_id)
                     for post in posts_new
                 )
             elif posts_new:
