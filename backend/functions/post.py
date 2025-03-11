@@ -9,17 +9,17 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
 
     # Try to fetch newer posts first
     if new_max_id:
-    url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={int(new_max_id) - 1}"
-    posts_new_response = requests.get(url, headers=headers)
-    if posts_new_response.status_code == 200:
-        posts_new = posts_new_response.json()
-        if posts_new and max_id and since_id:
-            posts_new_boolean = not any(
-                int(post.get('id', '0') or '0') >= int(max_id) and int(post.get('id', '0') or '0') <= int(since_id)
-                for post in posts_new
-            )
-        elif posts_new:
-            posts_new_boolean = True
+        url = f"{instance_url}/api/v1/timelines/public?remote=true&limit={limit}&max_id={int(new_max_id) - 1}"
+        posts_new_response = requests.get(url, headers=headers)
+        if posts_new_response.status_code == 200:
+            posts_new = posts_new_response.json()
+            if posts_new and max_id and since_id:
+                posts_new_boolean = not any(
+                    int(post.get('id', '0') or '0') >= int(max_id) and int(post.get('id', '0') or '0') <= int(since_id)
+                    for post in posts_new
+                )
+            elif posts_new:
+                posts_new_boolean = True
             
     current_max_id = int(max_id) if max_id else None
     if not posts_new_boolean:
