@@ -19,7 +19,7 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
                     if (pid >= int(max_id) and pid <= int(since_id)):
                         posts_new_boolean = False  # If any post is within range, switch to old posts mode
                         break
-                    elif pid == int(posts_new[-1].get('id', 0)):
+                    elif pid == int(posts_new[-1].get('id', 0)) and not (pid >= int(max_id) and pid <= int(since_id)):
                         posts_new_boolean = True
             elif posts_new:
                 posts_new_boolean = True
