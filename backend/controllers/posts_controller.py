@@ -35,7 +35,7 @@ def getAllPosts():
             if posts_new_first and max_id and since_id and (post.get('id', 0) <= since_id and post.get('id', 0) >= max_id):
                 posts_new = []  # Keep as an empty list
                 break
-            elif posts_new_first and not max_id or not since_id:
+            elif posts_new_first and (not max_id or not since_id):
                 posts_new = posts_new_first
     else:
         errors.append(f"New posts failed: {response_new.status_code}")
