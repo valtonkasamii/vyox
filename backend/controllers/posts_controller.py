@@ -9,9 +9,10 @@ def getAllPosts():
     data = request.get_json() or {}
     since_id = data.get('since_id')
     max_id = data.get('max_id')
+    access_token = data.get('accessToken')
 
     instance_url = os.getenv('FEDIVERSE_INSTANCE_URL')
-    access_token = os.getenv('FEDIVERSE_ACCESS_TOKEN')
+
     if not instance_url or not access_token:
         return jsonify({"error": "Server misconfigured"}), 500
 
