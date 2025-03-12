@@ -319,7 +319,7 @@ const Posts = ({profile, user, starr, single}) => {
             setComment('')
             const data = await response.json();
             console.log(data)
-            setReplies1([...replies1, data])
+            setReplies1([data, ...replies1])
           }
     
         } catch (error) {
@@ -828,7 +828,7 @@ const Posts = ({profile, user, starr, single}) => {
             <h1 className='text-3xl font-[500] ml-3 mt-[-3px]'>{replies1.length}</h1>
            </div>
            <div className='border-b-[2px] mb-3 border-blue-300'></div>
-           <div className='space-y-3 flex flex-col-reverse'>
+           <div className='space-y-3'>
             {replies.map((reply, index) => (
                 <div key={index} className={`${reply.id !== replies[replies.length -1].id ? 'border-b-[3px] pb-3' : ''} border-blue-300`}>
                     <div className='px-3'>
