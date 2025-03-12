@@ -6,11 +6,11 @@ export const firstData = [
             acct: 'vyox',
             display_name: 'vyox',
             locked: false,
-            avatar: "https://files.mastodon.social/accounts/avatars/113/864/467/807/030/159/original/cc15d2a421625022.jpg"
+            avatar: "https://files.mastodon.social/accounts/avatars/113/864/467/807/030/159/original/f29b08505f24b363.jpeg"
         },
         application: {
             name: 'vyox',
-            website: 'http://localhost:5173/',
+            website: 'http://vyox.vercel.app/',
         },
         bookmarked: false,
         card: null,
