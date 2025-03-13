@@ -56,10 +56,10 @@ def fetch_multiple_old_posts(instance_url, headers, new_max_id, since_id, max_id
 
         for post in new_posts:
             pid = int(post.get('id', 0))
-            if max_id and since_id and (pid >= int(max_id) and pid <= int(since_id)):
+            if posts_new_boolean and max_id and since_id and (pid >= int(max_id) and pid <= int(since_id)):
                 posts_new_boolean = False
                 break
-            elif not max_id or not since_id:
+            elif not posts_new_boolean or (not max_id or not since_id):
                 break
 
         if not posts_new_boolean:
