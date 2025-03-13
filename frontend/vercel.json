@@ -1,8 +1,8 @@
 {
     "redirects": [
       {
-        "source": "/(.*)@(.*)",
-        "destination": "/:1%40:2",
+        "source": "/:prefix@:suffix",
+        "destination": "/:prefix%40:suffix",
         "permanent": true
       }
     ],
