@@ -1,15 +1,10 @@
-{
+{ 
+    "routes": [{ "src": "/[^.]+", "dest": "/", "status": 200 }],
     "redirects": [
-      {
-        "source": "/(.*)@(.*)",
-        "destination": "/:1%40:2",
-        "permanent": true
-      }
-    ],
-    "rewrites": [
-      {
-        "source": "/(.*)",
-        "destination": "/"
-      }
-    ]
-  }
+    {
+      "source": "/(.*)@(.*)",
+      "destination": "/:1%40:2",
+      "permanent": true
+    }
+  ]
+}
