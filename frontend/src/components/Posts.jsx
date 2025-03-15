@@ -755,8 +755,8 @@ const Posts = ({profile, user, starr, single}) => {
                 </div></a>
 
                 <div className='text-2xl mx-3 mt-3 font-[] overflow-wrap  items-end'>
-                {!moreToggle.includes(post.id) && <div onClick={() => e.stopPropagation()} dangerouslySetInnerHTML={{ __html: moreText(post.content)}} />}
-                {moreToggle.includes(post.id) && <div onClick={() => e.stopPropagation()} dangerouslySetInnerHTML={{ __html: processHTML(post.content)}} />}
+                {!moreToggle.includes(post.id) && <div onClick={(e) => e.stopPropagation()} dangerouslySetInnerHTML={{ __html: moreText(post.content)}} />}
+                {moreToggle.includes(post.id) && <div onClick={(e) => e.stopPropagation()} dangerouslySetInnerHTML={{ __html: processHTML(post.content)}} />}
                 {!moreToggle.includes(post.id) && moreText("hello", post.id) && <div onClick={(e) => (moreFunc(post.id), e.stopPropagation())} className='cursor-pointer bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See More</div>}
                 {moreToggle.includes(post.id) && moreText("hello", post.id) && <div onClick={(e) => (moreFunc(post.id), e.stopPropagation())} className='cursor-pointer bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See Less</div>}
                 </div>
