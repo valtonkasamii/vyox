@@ -519,9 +519,9 @@ const Posts = ({profile, user, starr, single}) => {
         } else return 'mt-1'
     }
 
-    const likePost = (id) => {
+    const likePost = (id, reply) => {
         toggleLike(id, false)
-
+        if (!reply) {
         if (!profile && select2 === "Explore" && !single) {
             dispatch(addLike(id))
         } else if (!profile && select2 === "Following" & !single) {
@@ -529,17 +529,23 @@ const Posts = ({profile, user, starr, single}) => {
         } else if (profile || single) {
             setProfilePosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post ) );
         }
+        } else {
+            setReplies1((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: true, favourites_count: post.favourites_count + 1 } : post ) );
+        }
     }
     
-    const unlikePost = (id) => {
+    const unlikePost = (id, reply) => {
         toggleLike(id, true)
 
+        if (!reply) {
         if (!profile && select2 === "Explore" && !single) {
             dispatch(addUnlike(id))
         } else if (!profile && select2 === "Following" && !single) {
             setFollowingPosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post ) );
         } else if (profile || single) {
             setProfilePosts((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post ) );
+        }} else {
+            setReplies1((prevPosts) => prevPosts.map((post) => post.id === id ? { ...post, favourited: false, favourites_count: post.favourites_count - 1 } : post ) );
         }
     }
 
@@ -831,16 +837,33 @@ const Posts = ({profile, user, starr, single}) => {
            <div className='space-y-3'>
             {replies.map((reply, index) => (
                 <div key={index} className={`${reply.id !== replies[replies.length -1].id ? 'border-b-[3px] pb-3' : ''} border-blue-300`}>
-                    <div className='px-3'>
+                    <div onClick={(e) => handleClickContainer(reply.id, e)} className='px-3'>
 
-                    <div className='flex items-center mb-2'>
+                    <a href={`/${reply.account.acct}`} className='flex items-center mb-2'>
                         <img className='w-[68px] rounded-full' src={reply.account.avatar}/>
                         <p className='ml-2 font-[500] text-2xl break-all'>@{reply.account.username}</p>
-                    </div>
-                    {!moreToggle.includes(reply.id) && <div className='text-2xl' dangerouslySetInnerHTML={{ __html: moreText(reply.content)}} />}
-                    {moreToggle.includes(reply.id) && <div className='text-2xl' dangerouslySetInnerHTML={{ __html: processHTML(reply.content)}} />}
+                    </a>
+                    {!moreToggle.includes(reply.id) && <div onClick={(e) => e.stopPropagation()} className='text-2xl' dangerouslySetInnerHTML={{ __html: moreText(reply.content)}} />}
+                    {moreToggle.includes(reply.id) && <div onClick={(e) => e.stopPropagation()} className='text-2xl' dangerouslySetInnerHTML={{ __html: processHTML(reply.content)}} />}
                 {!moreToggle.includes(reply.id) && moreText("hello", null, reply.id) && <div onClick={(e) => (moreFunc(reply.id), e.stopPropagation())} className='cursor-pointer text-2xl bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See More</div>}
                 {moreToggle.includes(reply.id) && moreText("hello", null, reply.id) && <div onClick={(e) => (moreFunc(reply.id), e.stopPropagation())} className='cursor-pointer text-2xl bg-[#0e1d36] px-3 py-1 w-fit rounded-full mt-2 whitespace-nowrap'>See Less</div>}
+
+                <div className='mt-3 w-full px-7 flex items-center justify-between'>
+                        <div className='flex mt-[-6px] items-center space-x-[5px]'>
+                    {!reply.favourited && <FontAwesomeIcon onClick={(e) => (likePost(reply.id, true), e.stopPropagation())} className='cursor-pointer w-[37px] h-[37px]' icon={faHeart}/>}
+                    {reply.favourited && <FontAwesomeIcon onClick={(e) => (unlikePost(reply.id, true), e.stopPropagation())} className='cursor-pointer w-[37px] h-[37px] text-yellow-300' icon={solidHeart}/>}    
+                        <p className='text-xl font-[500] mb-[-5px]'>{reply.favourites_count}</p>
+                        </div>
+
+                        <div className='ml-[px] mt-[-3px] flex space-x-[5px]'>
+                        <FontAwesomeIcon  className='cursor-pointer w-8 h-8 -10' icon={faReply}/>
+                        </div>
+
+                        <div className='mb-[px]'>
+                        <FontAwesomeIcon onClick={(e) => (handleThree(reply.id), e.stopPropagation())} className='cursor-pointer bg-[#0e1d36] rounded-full px-3 w-8 h-8 -10' icon={faEllipsisH}/>
+                        </div>
+                    </div>
+
                 </div>
                 </div>
             ))}
