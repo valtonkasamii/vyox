@@ -836,7 +836,8 @@ const Posts = ({profile, user, starr, single}) => {
            <div className='border-b-[2px] mb-3 border-blue-300'></div>
            <div className='space-y-3'>
             {replies.map((reply, index) => (
-                <div key={index} className={`${reply.id !== replies[replies.length -1].id ? 'border-b-[3px] pb-3' : ''} border-blue-300`}>
+                <div>
+                    {reply.content.length > 0 && <div key={index} className={`${reply.id !== replies[replies.length -1].id ? 'border-b-[3px] pb-3' : ''} border-blue-300`}>
                     <div onClick={(e) => handleClickContainer(reply.id, e)} className='px-3'>
 
                     <a href={`/${reply.account.acct}`} className='flex items-center mb-2'>
@@ -865,6 +866,8 @@ const Posts = ({profile, user, starr, single}) => {
                     </div>
 
                 </div>
+                </div>
+                }
                 </div>
             ))}
             </div>
