@@ -823,7 +823,7 @@ const Posts = ({profile, user, starr, single}) => {
         ))}
         {single && <div className='flex flex-col items-center'>
             <form onSubmit={sendReply} className='mb-3 mt-[-8px] bg-[#0e1d36] text-2xl sm:w-[400px] border-2 border-blue-300 max-sm:w-[95vw]  rounded-[20px] flex justify-between'>
-                <input value={comment} onChange={(e) => setComment(e.target.value)} type='text' placeholder='Type your reply...' className='placeholder:text-gray-200 w-full bg-blue-900 px-3 h-[50px] rounded-l-[20px]'/>
+                <input required value={comment} onChange={(e) => setComment(e.target.value)} type='text' placeholder='Type your reply...' className='placeholder:text-gray-200 w-full bg-blue-900 px-3 h-[50px] rounded-l-[20px]'/>
                 {!replyWait && <button className='rounded-r-[20px] font-[500] px-3'>{`>>>`}</button>}
                 {replyWait && <button type='button' className='rounded-r-[20px] text-blue-600 bg-blue-600 font-[500] px-3'>{`>>>`}</button>}
             </form>
