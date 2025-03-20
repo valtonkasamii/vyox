@@ -868,7 +868,7 @@ const Posts = ({profile, user, starr, single}) => {
             </div>
             </div></div>}
         {!swap2() && <div className='mb-2'></div>}
-        {((loading2 && num >= allPosts.length && select2 === "Explore" && !profile && !single) || (select2 === "Explore" && allPosts.length === 0 && !profile && !single) || (select2 === "Following" && followingPosts.length === 0) || (profile && profilePosts.length === 0) || (single && profilePosts.length === 0)) && !error && (!single || single && profilePosts.length === 0) && <div className='flex justify-center'> 
+        {((loading2 && num >= allPosts.length && select2 === "Explore" && !profile && !single) || (select2 === "Explore" && allPosts.length === 0 && !profile && !single) || (select2 === "Following" && followingPosts.length === 0) || loading2 || (profile && profilePosts.length === 0) || (single && profilePosts.length === 0)) && !error && (!single || single && profilePosts.length === 0) && <div className='flex justify-center'> 
             <div className={`flex justify-center text-4xl px-4 pt-[6px] py-2 border-2 w-fit rounded-[15px] ${css6()} mb-3`}>
             Loading
             </div>
