@@ -37,12 +37,12 @@ const Posts = ({profile, user, starr, single}) => {
     const replies = replies1.slice(0, num)
     const [comment, setComment] = useState('')
     const [replyWait, setReplyWait] = useState(false)
+    const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
 
     console.log(allPosts.length, profilePosts.length, followingPosts.length, num)
     console.log(posts)
 
     const get10posts = async (currentNum, following) => {
-        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
       if (((refresh >= allPosts.length || allPosts.length <= 200 || (allPosts.length - 200) <= currentNum || (allPosts.length - 200) <= refresh) || profile || select2 === "Following" || single)) {
         try {  
             setLoading2(true)
@@ -168,9 +168,7 @@ const Posts = ({profile, user, starr, single}) => {
         
     } 
 
-    const toggleLike = async (postId, isLiked) => {
-        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
-    
+    const toggleLike = async (postId, isLiked) => {    
         try {
             let response
             if (!isLiked){
@@ -206,7 +204,6 @@ const Posts = ({profile, user, starr, single}) => {
         e.preventDefault()
         if (createWait === false) {
         setCreateWait(true)
-        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         try {
             const mediaIds = []
             if (postimg.length > 0) {
@@ -267,7 +264,6 @@ const Posts = ({profile, user, starr, single}) => {
 
     const deletePost = async (id) => {
         setDeleteWait(true)
-        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         try {
             const response = await fetch(`${mastodonServer}/api/v1/statuses/${id}`, {
                 method: 'DELETE',
@@ -295,7 +291,6 @@ const Posts = ({profile, user, starr, single}) => {
 
     const sendReply = async (e) => {
         e.preventDefault()
-        const mastodonServer = import.meta.env.VITE_FEDIVERSE_INSTANCE_URL
         if (!replyWait) {
             setReplyWait(true)
         try {
