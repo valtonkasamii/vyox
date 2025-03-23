@@ -21,6 +21,7 @@ const Posts = ({profile, user, starr, single}) => {
     const posts = postSwitcher.slice(0, num)
     const [loading2, setLoading2] = useState(false)
     const isFetchingRef = useRef(false)
+    const isFetchingRef2 = useRef(false)
     const [create, setCreate] = useState(false)
     const parser = new DOMParser()
     const [moreToggle, setMoreToggle] = useState([])
@@ -158,11 +159,15 @@ const Posts = ({profile, user, starr, single}) => {
                 setLoading2(false)
                 if (!following) {
                 isFetchingRef.current = false
+                } else {
+                    isFetchingRef2.current = false
                 }
               }
         } else {
             if (!following) {
             isFetchingRef.current = false
+            } else {
+                isFetchingRef2.current = false
             }
         }
         
@@ -404,10 +409,15 @@ const Posts = ({profile, user, starr, single}) => {
             if (!profile && select2 != "Following"){
                 dispatch(addRefresh(outside))
             }
-            if (!isFetchingRef.current) {
+            if (!isFetchingRef.current || !isFetchingRef2.current) {
                 isFetchingRef.current = true
+                isFetchingRef2.current = true
                 if(!profile) {
-                    get10posts(outside)
+                    if (select2 === "Following") {
+                        get10posts(outside, true)
+                    } else {
+                        get10posts(outside)
+                    }
                 } else if (profile && profilePosts.length % 40 === 0) {
                     get10posts(outside)
                 }
