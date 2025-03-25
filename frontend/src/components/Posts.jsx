@@ -282,6 +282,9 @@ const Posts = ({profile, user, starr, single}) => {
                 if (!profile) {
                     const filteredPosts = followingPosts.filter(post => post.id != id)
                     setFollowingPosts(filteredPosts)
+                    if (single) {
+                        window.location.href = 'https://vyox.vercel.app'
+                    }
                 } else {
                     const filteredPosts = profilePosts.filter(post => post.id != id)
                     setProfilePosts(filteredPosts)
@@ -691,7 +694,10 @@ const Posts = ({profile, user, starr, single}) => {
     };
 
     const hiding = (id) => {
-        if (!profile) {
+        if (single) {
+            window.location.href = 'https://vyox.vercel.app'
+        
+         } else if (!profile) {
         if (select2 === "Explore") {
             dispatch(hide(id))
         } else {
@@ -866,7 +872,7 @@ const Posts = ({profile, user, starr, single}) => {
                         </div>
 
                         <div className='mb-[px]'>
-                        <FontAwesomeIcon onClick={(e) => (handleThree(reply.id), e.stopPropagation())} className='cursor-pointer bg-[#0e1d36] rounded-full px-3 w-8 h-8 -10' icon={faEllipsisH}/>
+                        <FontAwesomeIcon className='cursor-pointer bg-[#0e1d36] rounded-full px-3 w-8 h-8 -10' icon={faEllipsisH}/>
                         </div>
                     </div>
 
