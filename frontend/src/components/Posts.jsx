@@ -8,7 +8,7 @@ import { firstData } from './firstData.js';
 
 const Posts = ({profile, user, starr, single}) => {
     const [select, setSelect] = useState('Text')
-    const [select2, setSelect2] = useState('Explore')
+    const [select2, setSelect2] = useState('Following')
     const [num, setNum] = useState(0)
     const dispatch = useDispatch();
     const allPosts = useSelector((state) => state.posts.posts);
@@ -720,7 +720,7 @@ const Posts = ({profile, user, starr, single}) => {
             <option value="Media">Media</option>
             <option value="Text">Text</option>
         </select>
-        {!profile && <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`${select2Width(select2)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
+        {!profile && false && <select value={select2} onChange={(e) => setSelect2(e.target.value)} className={`${select2Width(select2)} hover:bg-blue-600 cursor-pointer bg-[#115999] pl-1 rounded-full text-2xl`}>
             <option value="Explore">Explore</option>
             <option value="Following">Following</option>
         </select>}
